@@ -1,22 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
-// Use service role key for admin operations
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Lazy initialization of Supabase client to avoid build-time errors
+let supabaseInstance: SupabaseClient | null = null;
 
-console.log('Supabase URL:', supabaseUrl);
-console.log('Service key exists:', !!supabaseServiceKey);
+function getSupabaseClient(): SupabaseClient {
+  if (!supabaseInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rcckdqrnzcdzbofiguxx.supabase.co';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase environment variables');
+    if (!supabaseServiceKey) {
+      throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for admin operations');
+    }
+
+    supabaseInstance = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  
+  return supabaseInstance;
 }
-
-const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
 export async function POST(request: NextRequest) {
   try {
+    // Initialize Supabase client lazily
+    const supabase = getSupabaseClient();
+    
     console.log('Admin add request received');
     
     const { email } = await request.json();

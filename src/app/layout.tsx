@@ -83,7 +83,7 @@ export default function RootLayout({
         {/* Critical preconnect only */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://puvmqdnvofbtmqpcjmia.supabase.co" />
+        <link rel="preconnect" href="https://rcckdqrnzcdzbofiguxx.supabase.co" />
         
         {/* Favicon and app icons */}
         <link rel="icon" href="/favicon.ico" sizes="any" />

@@ -70,7 +70,7 @@ const TestConnectionPage: React.FC = () => {
       // Test 5: Supabase URL reachability
       addResult('Testing Supabase URL reachability...');
       try {
-        const supabaseUrl = 'https://puvmqdnvofbtmqpcjmia.supabase.co';
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rcckdqrnzcdzbofiguxx.supabase.co';
         const urlStart = Date.now();
         const response = await fetch(supabaseUrl, {
           method: 'HEAD',

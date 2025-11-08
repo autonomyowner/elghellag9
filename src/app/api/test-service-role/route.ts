@@ -1,16 +1,27 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Lazy initialization of Supabase client to avoid build-time errors
+let supabaseInstance: SupabaseClient | null = null;
 
-console.log('Supabase URL:', supabaseUrl);
-console.log('Service key exists:', !!supabaseServiceKey);
+function getSupabaseClient(): SupabaseClient {
+  if (!supabaseInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rcckdqrnzcdzbofiguxx.supabase.co';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+    if (!supabaseServiceKey) {
+      throw new Error('SUPABASE_SERVICE_ROLE_KEY is required');
+    }
+
+    supabaseInstance = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  
+  return supabaseInstance;
+}
 
 export async function GET() {
   try {
+    const supabase = getSupabaseClient();
     console.log('Testing service role connection...');
     
     // Test basic connection with service role
