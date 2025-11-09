@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { designSystem, utils, animations } from '@/lib/designSystem';
 import { useLazyLoad, PerformanceMonitor } from '@/lib/performance';
@@ -46,10 +45,10 @@ interface SectionData {
   items: MarketplaceItem[];
   loading: boolean;
   link: string;
+  error?: string | null;
 }
 
 export default function MarketplacePage() {
-  const { user } = useSupabaseAuth();
   const [isHydrated, setIsHydrated] = useState(false);
   const [sections, setSections] = useState<SectionData[]>([
     {
@@ -58,7 +57,8 @@ export default function MarketplacePage() {
       color: 'bg-emerald-500',
       items: [],
       loading: true,
-      link: '/land'
+      link: '/land',
+      error: null
     },
     {
       title: 'الشتلات والمشاتل',
@@ -66,7 +66,8 @@ export default function MarketplacePage() {
       color: 'bg-green-500',
       items: [],
       loading: true,
-      link: '/nurseries'
+      link: '/nurseries',
+      error: null
     },
     {
       title: 'المعدات الزراعية',
@@ -74,7 +75,8 @@ export default function MarketplacePage() {
       color: 'bg-blue-500',
       items: [],
       loading: true,
-      link: '/equipment'
+      link: '/equipment',
+      error: null
     },
     {
       title: 'الحيوانات',
@@ -82,7 +84,8 @@ export default function MarketplacePage() {
       color: 'bg-orange-500',
       items: [],
       loading: true,
-      link: '/animals'
+      link: '/animals',
+      error: null
     },
     {
       title: 'الخضروات والفواكه',
@@ -90,9 +93,20 @@ export default function MarketplacePage() {
       color: 'bg-red-500',
       items: [],
       loading: true,
-      link: '/VAR/marketplace'
+      link: '/VAR/marketplace',
+      error: null
     }
   ]);
+
+  const updateSectionState = useCallback((title: SectionData['title'], updates: Partial<SectionData>) => {
+    setSections(prev =>
+      prev.map(section =>
+        section.title === title
+          ? { ...section, ...updates }
+          : section
+      )
+    );
+  }, [setSections]);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -115,6 +129,7 @@ export default function MarketplacePage() {
   };
 
   const loadLandSection = async () => {
+    const title = 'الأراضي الزراعية';
     try {
       const { data, error } = await supabase
         .from('land_listings')
@@ -123,19 +138,28 @@ export default function MarketplacePage() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (!error && data) {
-        setSections(prev => prev.map(section => 
-          section.title === 'الأراضي الزراعية' 
-            ? { ...section, items: data.map(item => ({ ...item, type: 'land' as const })), loading: false }
-            : section
-        ));
+      if (error) {
+        throw error;
       }
+
+      updateSectionState(title, {
+        items: (data ?? []).map(item => ({ ...item, type: 'land' as const })),
+        loading: false,
+        error: null
+      });
     } catch (error) {
       console.error('Error loading land section:', error);
+      const message = error instanceof Error ? error.message : 'unknown';
+      updateSectionState(title, {
+        loading: false,
+        error: `تعذر تحميل إعلانات الأراضي. (${message})`,
+        items: []
+      });
     }
   };
 
   const loadNurserySection = async () => {
+    const title = 'الشتلات والمشاتل';
     try {
       const { data, error } = await supabase
         .from('nurseries')
@@ -144,19 +168,28 @@ export default function MarketplacePage() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (!error && data) {
-        setSections(prev => prev.map(section => 
-          section.title === 'الشتلات والمشاتل' 
-            ? { ...section, items: data.map(item => ({ ...item, type: 'nursery' as const })), loading: false }
-            : section
-        ));
+      if (error) {
+        throw error;
       }
+
+      updateSectionState(title, {
+        items: (data ?? []).map(item => ({ ...item, type: 'nursery' as const })),
+        loading: false,
+        error: null
+      });
     } catch (error) {
       console.error('Error loading nursery section:', error);
+      const message = error instanceof Error ? error.message : 'unknown';
+      updateSectionState(title, {
+        loading: false,
+        error: `تعذر تحميل إعلانات المشاتل. (${message})`,
+        items: []
+      });
     }
   };
 
   const loadEquipmentSection = async () => {
+    const title = 'المعدات الزراعية';
     try {
       const { data, error } = await supabase
         .from('equipment')
@@ -165,19 +198,28 @@ export default function MarketplacePage() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (!error && data) {
-        setSections(prev => prev.map(section => 
-          section.title === 'المعدات الزراعية' 
-            ? { ...section, items: data.map(item => ({ ...item, type: 'equipment' as const })), loading: false }
-            : section
-        ));
+      if (error) {
+        throw error;
       }
+
+      updateSectionState(title, {
+        items: (data ?? []).map(item => ({ ...item, type: 'equipment' as const })),
+        loading: false,
+        error: null
+      });
     } catch (error) {
       console.error('Error loading equipment section:', error);
+      const message = error instanceof Error ? error.message : 'unknown';
+      updateSectionState(title, {
+        loading: false,
+        error: `تعذر تحميل إعلانات المعدات. (${message})`,
+        items: []
+      });
     }
   };
 
   const loadAnimalSection = async () => {
+    const title = 'الحيوانات';
     try {
       const { data, error } = await supabase
         .from('animal_listings')
@@ -186,19 +228,28 @@ export default function MarketplacePage() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (!error && data) {
-        setSections(prev => prev.map(section => 
-          section.title === 'الحيوانات' 
-            ? { ...section, items: data.map(item => ({ ...item, type: 'animal' as const })), loading: false }
-            : section
-        ));
+      if (error) {
+        throw error;
       }
+
+      updateSectionState(title, {
+        items: (data ?? []).map(item => ({ ...item, type: 'animal' as const })),
+        loading: false,
+        error: null
+      });
     } catch (error) {
       console.error('Error loading animal section:', error);
+      const message = error instanceof Error ? error.message : 'unknown';
+      updateSectionState(title, {
+        loading: false,
+        error: `تعذر تحميل إعلانات الحيوانات. (${message})`,
+        items: []
+      });
     }
   };
 
   const loadVegetableSection = async () => {
+    const title = 'الخضروات والفواكه';
     try {
       const { data, error } = await supabase
         .from('vegetables')
@@ -207,16 +258,32 @@ export default function MarketplacePage() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (!error && data) {
-        setSections(prev => prev.map(section => 
-          section.title === 'الخضروات والفواكه' 
-            ? { ...section, items: data.map(item => ({ ...item, type: 'vegetable' as const })), loading: false }
-            : section
-        ));
+      if (error) {
+        throw error;
       }
+
+      updateSectionState(title, {
+        items: (data ?? []).map(item => ({ ...item, type: 'vegetable' as const })),
+        loading: false,
+        error: null
+      });
     } catch (error) {
       console.error('Error loading vegetable section:', error);
+      const message = error instanceof Error ? error.message : 'unknown';
+      updateSectionState(title, {
+        loading: false,
+        error: `تعذر تحميل إعلانات الخضروات. (${message})`,
+        items: []
+      });
     }
+  };
+
+  const sectionLoadHandlers: Record<SectionData['title'], () => Promise<void>> = {
+    'الأراضي الزراعية': loadLandSection,
+    'الشتلات والمشاتل': loadNurserySection,
+    'المعدات الزراعية': loadEquipmentSection,
+    'الحيوانات': loadAnimalSection,
+    'الخضروات والفواكه': loadVegetableSection,
   };
 
   const formatPrice = (price: number, currency: string) => {
@@ -313,6 +380,16 @@ export default function MarketplacePage() {
                       <div className="bg-white/20 h-3 rounded w-2/3"></div>
                     </div>
                   ))}
+                </div>
+              ) : section.error ? (
+                <div className="bg-white/5 border border-red-400/30 rounded-xl p-6 text-center">
+                  <div className="text-red-300 font-semibold mb-3">{section.error}</div>
+                  <button
+                    onClick={() => sectionLoadHandlers[section.title]?.()}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
+                  >
+                    إعادة المحاولة
+                  </button>
                 </div>
               ) : section.items.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
