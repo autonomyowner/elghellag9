@@ -194,32 +194,8 @@ const AdvancedPerformanceOptimizer: React.FC = () => {
     }
   }, []);
 
-  // Advanced caching strategies
+  // Advanced caching strategies (IndexedDB only, service workers disabled)
   const setupAdvancedCaching = useCallback(() => {
-    // Service Worker registration for advanced caching
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' })
-        .then((registration) => {
-          console.log('Advanced SW registered:', registration);
-          
-          // Update service worker
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New content available
-                  showUpdateNotification();
-                }
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          console.log('Advanced SW registration failed:', error);
-        });
-    }
-
     // IndexedDB for large data caching
     if ('indexedDB' in window) {
       const request = indexedDB.open('ElghellaCache', 1);
@@ -303,25 +279,6 @@ const AdvancedPerformanceOptimizer: React.FC = () => {
     highQualityElements.forEach((element) => {
       element.removeAttribute('style');
     });
-  }, []);
-
-  // Show update notification
-  const showUpdateNotification = useCallback(() => {
-    const notification = document.createElement('div');
-    notification.innerHTML = `
-      <div style="position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 16px; border-radius: 8px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        <div style="font-weight: bold; margin-bottom: 8px;">تحديث متاح</div>
-        <div style="font-size: 14px; margin-bottom: 12px;">تم تحديث الموقع. انقر للتحديث.</div>
-        <button onclick="window.location.reload()" style="background: white; color: #10b981; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
-          تحديث الآن
-        </button>
-      </div>
-    `;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.remove();
-    }, 10000);
   }, []);
 
   // Advanced scroll optimization

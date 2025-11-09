@@ -87,16 +87,6 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' },
         ],
       },
-      // Everything else (HTML, API, data): no-store
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'Cache-Control', value: 'no-store, max-age=0, must-revalidate' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
-        ],
-      },
     ];
   },
 

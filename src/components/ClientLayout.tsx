@@ -15,10 +15,6 @@ const ConditionalHeader = dynamic(() => import("@/components/ConditionalHeader")
 import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
 import { SearchProvider } from "@/contexts/SearchContext";
 
-const ServiceWorkerRegistration = dynamic(() => import("@/components/ServiceWorkerRegistration"), {
-  ssr: false
-});
-
 // Keep only one performance optimizer to prevent conflicts
 const PerformanceOptimizer = dynamic(() => import("@/components/PerformanceOptimizer"), {
   ssr: false
@@ -63,7 +59,6 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
         <main className="min-h-screen">
           {children}
         </main>
-        <ServiceWorkerRegistration />
       </SearchProvider>
     </SupabaseAuthProvider>
   );

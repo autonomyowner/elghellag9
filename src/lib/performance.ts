@@ -288,18 +288,6 @@ export const webVitals = {
   }
 };
 
-// Service Worker Registration for Caching
-export const registerServiceWorker = async (): Promise<void> => {
-  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('SW registered: ', registration);
-    } catch (registrationError) {
-      console.log('SW registration failed: ', registrationError);
-    }
-  }
-};
-
 // Export all utilities
 export default {
   AdvancedCache,
@@ -313,5 +301,4 @@ export default {
   NetworkOptimizer,
   queryConfig,
   webVitals,
-  registerServiceWorker,
 }; 
