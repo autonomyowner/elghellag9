@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { cookies } from 'next/headers';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
 import HydrationSuppressor from '@/components/HydrationSuppressor';
 import MobileOptimizedInterface from '@/components/MobileOptimizedInterface';
 
 const inter = Inter({ subsets: ['latin'] });
+
+// Force dynamic rendering - never statically cache this layout
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'الغلة - سوق المزارعين الإلكتروني',
@@ -63,11 +67,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Read cookies to ensure dynamic rendering
+  // This forces Next.js to render on every request
+  const cookieStore = await cookies();
+  cookieStore.toString(); // Access cookies to mark as dynamic
+  
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
