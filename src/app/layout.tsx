@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
 import HydrationSuppressor from '@/components/HydrationSuppressor';
@@ -10,6 +10,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 // Force dynamic rendering - never statically cache this layout
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: 'الغلة - سوق المزارعين الإلكتروني',
@@ -72,10 +73,16 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Read cookies to ensure dynamic rendering
+  // Read cookies and headers to ensure dynamic rendering
   // This forces Next.js to render on every request
   const cookieStore = await cookies();
-  cookieStore.toString(); // Access cookies to mark as dynamic
+  const headersList = await headers();
+  // Read cookies and headers - accessing these marks the route as dynamic
+  const allCookies = cookieStore.getAll();
+  // Access user-agent or any header to ensure dynamic rendering
+  const userAgent = headersList.get('user-agent') || headersList.get('x-vercel-id');
+  // Force dynamic by reading request headers/cookies
+  // This ensures the page is never statically cached
   
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>

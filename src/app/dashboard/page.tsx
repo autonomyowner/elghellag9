@@ -1,8 +1,5 @@
 'use client'
 
-// Force dynamic rendering - never statically cache this page
-export const dynamic = 'force-dynamic';
-
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic';
 import AuthGuard from '@/components/AuthGuard'

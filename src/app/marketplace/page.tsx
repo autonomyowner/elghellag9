@@ -1,8 +1,5 @@
 'use client';
 
-// Force dynamic rendering - never statically cache this page
-export const dynamic = 'force-dynamic';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';

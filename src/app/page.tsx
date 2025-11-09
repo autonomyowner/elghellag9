@@ -1,8 +1,5 @@
 'use client';
 
-// Force dynamic rendering - never statically cache this page
-export const dynamic = 'force-dynamic';
-
 // Force redeploy - auth environment variables fix
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
