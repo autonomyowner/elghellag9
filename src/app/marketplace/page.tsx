@@ -49,7 +49,6 @@ interface SectionData {
 }
 
 export default function MarketplacePage() {
-  const [isHydrated, setIsHydrated] = useState(false);
   const [sections, setSections] = useState<SectionData[]>([
     {
       title: 'الأراضي الزراعية',
@@ -106,29 +105,9 @@ export default function MarketplacePage() {
           : section
       )
     );
-  }, [setSections]);
-
-  useEffect(() => {
-    setIsHydrated(true);
-    PerformanceMonitor.startTimer('marketplace-load');
-    loadAllSections();
   }, []);
 
-  useEffect(() => {
-    PerformanceMonitor.endTimer('marketplace-load');
-  }, []);
-
-  const loadAllSections = async () => {
-    await Promise.all([
-      loadLandSection(),
-      loadNurserySection(),
-      loadEquipmentSection(),
-      loadAnimalSection(),
-      loadVegetableSection()
-    ]);
-  };
-
-  const loadLandSection = async () => {
+  const loadLandSection = useCallback(async () => {
     const title = 'الأراضي الزراعية';
     try {
       const { data, error } = await supabase
@@ -156,9 +135,9 @@ export default function MarketplacePage() {
         items: []
       });
     }
-  };
+  }, [updateSectionState]);
 
-  const loadNurserySection = async () => {
+  const loadNurserySection = useCallback(async () => {
     const title = 'الشتلات والمشاتل';
     try {
       const { data, error } = await supabase
@@ -186,9 +165,9 @@ export default function MarketplacePage() {
         items: []
       });
     }
-  };
+  }, [updateSectionState]);
 
-  const loadEquipmentSection = async () => {
+  const loadEquipmentSection = useCallback(async () => {
     const title = 'المعدات الزراعية';
     try {
       const { data, error } = await supabase
@@ -216,9 +195,9 @@ export default function MarketplacePage() {
         items: []
       });
     }
-  };
+  }, [updateSectionState]);
 
-  const loadAnimalSection = async () => {
+  const loadAnimalSection = useCallback(async () => {
     const title = 'الحيوانات';
     try {
       const { data, error } = await supabase
@@ -246,9 +225,9 @@ export default function MarketplacePage() {
         items: []
       });
     }
-  };
+  }, [updateSectionState]);
 
-  const loadVegetableSection = async () => {
+  const loadVegetableSection = useCallback(async () => {
     const title = 'الخضروات والفواكه';
     try {
       const { data, error } = await supabase
@@ -276,7 +255,38 @@ export default function MarketplacePage() {
         items: []
       });
     }
-  };
+  }, [updateSectionState]);
+
+  const loadAllSections = useCallback(async () => {
+    PerformanceMonitor.startTimer('marketplace-load');
+    try {
+      await Promise.all([
+        loadLandSection(),
+        loadNurserySection(),
+        loadEquipmentSection(),
+        loadAnimalSection(),
+        loadVegetableSection()
+      ]);
+    } finally {
+      PerformanceMonitor.endTimer('marketplace-load');
+    }
+  }, [loadLandSection, loadNurserySection, loadEquipmentSection, loadAnimalSection, loadVegetableSection]);
+
+  useEffect(() => {
+    // Load data immediately on mount
+    loadAllSections();
+
+    // Fallback timeout to clear loading states if requests hang (10 seconds)
+    const timeoutId = setTimeout(() => {
+      setSections(prev => prev.map(section => 
+        section.loading 
+          ? { ...section, loading: false, error: 'انتهت مهلة التحميل. يرجى تحديث الصفحة.' }
+          : section
+      ));
+    }, 10000);
+
+    return () => clearTimeout(timeoutId);
+  }, [loadAllSections]);
 
   const sectionLoadHandlers: Record<SectionData['title'], () => Promise<void>> = {
     'الأراضي الزراعية': loadLandSection,
@@ -315,18 +325,6 @@ export default function MarketplacePage() {
     
     return defaultImages[item.type];
   };
-
-  // Prevent hydration mismatch
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-900 to-emerald-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-emerald-300 font-semibold">جاري التحميل...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen text-white relative overflow-hidden bg-gradient-to-br from-green-900 to-gray-900">
