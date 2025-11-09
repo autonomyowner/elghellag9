@@ -26,6 +26,35 @@ interface ClientLayoutProps {
 
 const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   useEffect(() => {
+    // Proactively remove legacy service workers and caches that may still be registered
+    const cleanupLegacyCaching = async () => {
+      try {
+        if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          if (registrations.length > 0) {
+            await Promise.all(registrations.map((registration) => registration.unregister()));
+            console.log('[ClientLayout] Unregistered legacy service workers:', registrations.length);
+          }
+        }
+
+        if (typeof window !== 'undefined' && 'caches' in window) {
+          const cacheNames = await caches.keys();
+          const legacyCaches = cacheNames.filter((name) =>
+            ['elghella', 'workbox', 'next-runtime'].some((prefix) => name.startsWith(prefix))
+          );
+
+          if (legacyCaches.length > 0) {
+            await Promise.all(legacyCaches.map((name) => caches.delete(name)));
+            console.log('[ClientLayout] Cleared legacy caches:', legacyCaches);
+          }
+        }
+      } catch (error) {
+        console.warn('[ClientLayout] Failed to clean up legacy service workers/caches:', error);
+      }
+    };
+
+    cleanupLegacyCaching();
+
     // Initialize cache clearing in development (only once)
     if (process.env.NODE_ENV === 'development') {
       // Clear cache on component mount (only once)
