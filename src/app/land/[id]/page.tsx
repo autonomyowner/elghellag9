@@ -162,8 +162,9 @@ const LandDetailPage: React.FC = () => {
                   <Image
                     src={listing.images[currentImageIndex]}
                     alt={listing.title}
-                    fill
-                    className="object-cover"
+                    width={800}
+                    height={400}
+                    className="w-full h-full object-cover"
                     priority
                   />
                   

@@ -117,18 +117,26 @@ const EquipmentCardEnhanced = ({ item, viewMode }: { item: any, viewMode: 'grid'
       }`}
     >
       {/* Equipment Image */}
-      <div className={`${viewMode === 'grid' ? 'w-full h-48' : 'w-32 h-32'} relative overflow-hidden rounded-lg`}>
-        {item.images && item.images.length > 0 ? (
-          <img
+      <div className={`${viewMode === 'grid' ? 'w-full h-48' : 'w-32 h-32'} relative overflow-hidden rounded-lg bg-gradient-to-br from-emerald-200 to-teal-400 flex items-center justify-center`}>
+        {item.images && item.images.length > 0 && item.images[0] ? (
+          <Image
             src={item.images[0]}
             alt={item.title}
+            width={viewMode === 'grid' ? 400 : 128}
+            height={viewMode === 'grid' ? 192 : 128}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              console.error('Failed to load equipment image:', item.images[0]);
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const fallback = target.nextElementSibling;
+              if (fallback) fallback.classList.remove('hidden');
+            }}
           />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-emerald-200 to-teal-400 flex items-center justify-center">
-            <div className="text-6xl">{getEquipmentIcon(item.category_id)}</div>
-          </div>
-        )}
+        ) : null}
+        <div className={`text-6xl ${item.images && item.images.length > 0 && item.images[0] ? 'hidden' : ''}`}>
+          {getEquipmentIcon(item.category_id)}
+        </div>
       </div>
       
       {/* Badges */}

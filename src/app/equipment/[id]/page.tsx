@@ -144,15 +144,24 @@ const EquipmentDetailPage: React.FC = () => {
         <div className="lg:col-span-2">
           <div className="bg-black/50 backdrop-blur-lg border border-green-500/30 rounded-xl overflow-hidden">
             {equipment.images && equipment.images.length > 0 ? (
-              <div className="aspect-video relative">
+              <div className="relative w-full h-96 bg-neutral-900 flex items-center justify-center">
                 <Image
                   src={equipment.images[currentImageIndex]}
                   alt={equipment.title}
-                  fill
-                  className="object-cover"
+                  width={800}
+                  height={400}
+                  className="w-full h-full object-cover"
                   priority
+                  onError={(e) => {
+                    console.error('Failed to load image:', equipment.images[currentImageIndex]);
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling;
+                    if (fallback) fallback.classList.remove('hidden');
+                  }}
                 />
-                
+                <span className="text-6xl hidden absolute">🚜</span>
+
                 {equipment.images.length > 1 && (
                   <>
                     <button

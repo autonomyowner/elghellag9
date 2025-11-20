@@ -261,7 +261,7 @@ const VegetablesMarketplacePage: React.FC = () => {
 
             {/* Main Title */}
             <motion.div
-              className="text-5xl lg:text-7xl font-black mb-8 bg-gradient-to-r from-green-300 via-emerald-300 to-teal-400 bg-clip-text text-transparent drop-shadow-lg"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-8 bg-gradient-to-r from-green-300 via-emerald-300 to-teal-400 bg-clip-text text-transparent drop-shadow-lg"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.2 }}
@@ -271,7 +271,7 @@ const VegetablesMarketplacePage: React.FC = () => {
 
             {/* Subtitle */}
             <motion.div
-              className="text-xl lg:text-2xl mb-12 opacity-90 max-w-4xl mx-auto leading-relaxed"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl mb-12 opacity-90 max-w-4xl mx-auto leading-relaxed px-4"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.4 }}
@@ -497,7 +497,7 @@ const VegetablesMarketplacePage: React.FC = () => {
           
           {/* Vegetable Listings Grid */}
           {loading ? (
-            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-4'}`}>
+            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8' : 'space-y-4'}`}>
               {[...Array(6)].map((_, i) => (
                 <div key={i} className={`bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg shadow-lg p-6 animate-pulse ${viewMode === 'list' ? 'flex gap-4' : ''}`}>
                   <div className={`${viewMode === 'list' ? 'w-32 h-24' : 'h-48'} bg-gray-600/50 rounded-lg ${viewMode === 'list' ? 'flex-shrink-0' : 'mb-4'}`}></div>
@@ -515,7 +515,7 @@ const VegetablesMarketplacePage: React.FC = () => {
             </div>
           ) : listings.length > 0 ? (
             <>
-              <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-4'}`}>
+              <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8' : 'space-y-4'}`}>
                 {listings.map((vegetable, index) => (
                   <motion.div
                       key={vegetable.id}

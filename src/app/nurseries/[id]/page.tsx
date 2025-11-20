@@ -230,15 +230,25 @@ const NurseryDetailPage: React.FC = () => {
           <div className="lg:col-span-2">
             {/* Images */}
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8">
-              <div className="relative aspect-video rounded-xl overflow-hidden mb-4">
+              <div className="relative w-full h-96 rounded-xl overflow-hidden mb-4 bg-gray-200 flex items-center justify-center">
                 {nursery.images && nursery.images.length > 0 ? (
                   <>
                     <Image
                       src={nursery.images[currentImageIndex]}
                       alt={nursery.title}
-                      fill
-                      className="object-cover"
+                      width={800}
+                      height={400}
+                      className="w-full h-full object-cover"
+                      priority
+                      onError={(e) => {
+                        console.error('Failed to load nursery image:', nursery.images[currentImageIndex]);
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.parentElement?.querySelector('.fallback-emoji');
+                        if (fallback) fallback.classList.remove('hidden');
+                      }}
                     />
+                    <span className="text-6xl hidden fallback-emoji absolute">🌱</span>
                     {nursery.images.length > 1 && (
                       <>
                         <button

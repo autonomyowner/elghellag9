@@ -237,8 +237,10 @@ const VegetableDetailPage: React.FC = () => {
                     <Image
                       src={vegetable.images[currentImageIndex]}
                       alt={vegetable.title}
-                      fill
-                      className="object-cover"
+                      width={600}
+                      height={400}
+                      className="w-full h-full object-cover"
+                      priority
                     />
                   </div>
                   
@@ -256,8 +258,9 @@ const VegetableDetailPage: React.FC = () => {
                           <Image
                             src={image}
                             alt={`${vegetable.title} ${index + 1}`}
-                            fill
-                            className="object-cover"
+                            width={100}
+                            height={80}
+                            className="w-full h-full object-cover"
                           />
                         </button>
                       ))}

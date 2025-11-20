@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase/supabaseClient';
 import { designSystem, utils, animations } from '@/lib/designSystem';
 import { useLazyLoad, PerformanceMonitor } from '@/lib/performance';
@@ -330,15 +331,15 @@ export default function MarketplacePage() {
     <div className="min-h-screen text-white relative overflow-hidden bg-gradient-to-br from-green-900 to-gray-900">
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+      <section className="relative z-10 pt-20 sm:pt-24 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           {/* Main Title */}
-          <h1 className="text-4xl md:text-6xl font-black mb-4 bg-gradient-to-r from-emerald-300 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-lg">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 bg-gradient-to-r from-emerald-300 via-teal-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-lg">
             سوق الفلاح
           </h1>
-          
+
           {/* Subtitle */}
-          <p className="text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto leading-relaxed px-4">
             اكتشف كل ما تحتاجه للزراعة في مكان واحد
           </p>
         </div>
@@ -350,18 +351,18 @@ export default function MarketplacePage() {
           <section key={section.title} className="py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
               {/* Section Header */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <div className="flex items-center gap-3">
                   <div className={`${section.color} p-3 rounded-full`}>
                   </div>
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-emerald-300">{section.title}</h2>
-                    <p className="text-white/70 text-sm">أحدث الإعلانات</p>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-emerald-300">{section.title}</h2>
+                    <p className="text-white/70 text-xs sm:text-sm">أحدث الإعلانات</p>
                   </div>
                 </div>
                 <Link
                   href={section.link}
-                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
                 >
                   <span>عرض الكل</span>
                   <ArrowRight className="w-4 h-4" />
@@ -370,8 +371,8 @@ export default function MarketplacePage() {
 
               {/* Items Grid */}
               {section.loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                  {[...Array(5)].map((_, index) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, index) => (
                     <div key={index} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4 animate-pulse">
                       <div className="bg-white/20 h-32 rounded-lg mb-3"></div>
                       <div className="bg-white/20 h-4 rounded mb-2"></div>
@@ -390,7 +391,7 @@ export default function MarketplacePage() {
                   </button>
                 </div>
               ) : section.items.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {section.items.map((item, index) => (
                     <Link
                       key={item.id}
@@ -400,9 +401,11 @@ export default function MarketplacePage() {
                     >
                       {/* Item Image */}
                       <div className="relative h-32 overflow-hidden">
-                        <img
+                        <Image
                           src={getItemImage(item)}
                           alt={item.title}
+                          width={400}
+                          height={128}
                           className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
                           loading="lazy"
                         />
