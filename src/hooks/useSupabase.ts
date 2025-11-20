@@ -91,7 +91,7 @@ export function useEquipment() {
 
       let query = supabase
         .from('equipment')
-        .select('*')
+        .select('id, created_at, updated_at, user_id, title, description, price, currency, category_id, condition, year, brand, model, hours_used, location, contact_phone, images, is_available, is_featured, view_count')
         .order('created_at', { ascending: false })
         .limit(20); // Reduced limit for better performance
 
@@ -207,7 +207,7 @@ export function useEquipment() {
       const { data, error: supabaseError } = await supabase
         .from('equipment')
         .insert([newEquipment])
-        .select()
+        .select('id, created_at, updated_at, user_id, title, description, price, currency, category_id, condition, year, brand, model, hours_used, location, contact_phone, images, is_available, is_featured, view_count')
         .single();
 
       if (supabaseError) {

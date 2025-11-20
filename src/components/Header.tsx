@@ -140,9 +140,12 @@ const Header: React.FC = () => {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4 space-x-reverse">
             {loading ? (
-              <div className={`w-4 h-4 border border-t-transparent rounded-full animate-spin transition-colors duration-300 opacity-50 ${
-                isScrolled ? 'border-green-500' : 'border-white'
-              }`}></div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <div className={`w-4 h-4 border-2 border-t-transparent rounded-full animate-spin transition-colors duration-300 ${
+                  isScrolled ? 'border-green-500' : 'border-white'
+                }`}></div>
+                <span className={`text-xs ${isScrolled ? 'text-gray-600' : 'text-white/80'}`}>جاري التحميل...</span>
+              </div>
             ) : user ? (
               <div className="flex items-center space-x-3 space-x-reverse">
                 <Link 

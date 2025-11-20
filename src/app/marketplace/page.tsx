@@ -112,7 +112,7 @@ export default function MarketplacePage() {
     try {
       const { data, error } = await supabase
         .from('land_listings')
-        .select('*')
+        .select('id, title, description, price, currency, listing_type, area_size, area_unit, location, water_source, images, is_available, created_at')
         .eq('is_available', true)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -142,7 +142,7 @@ export default function MarketplacePage() {
     try {
       const { data, error } = await supabase
         .from('nurseries')
-        .select('*')
+        .select('id, title, description, price, currency, plant_type, plant_name, age_months, size, quantity, location, images, is_available, created_at')
         .eq('is_available', true)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -172,7 +172,7 @@ export default function MarketplacePage() {
     try {
       const { data, error } = await supabase
         .from('equipment')
-        .select('*')
+        .select('id, title, description, price, currency, images, location, condition, brand, model, is_available, created_at')
         .eq('is_available', true)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -202,7 +202,7 @@ export default function MarketplacePage() {
     try {
       const { data, error } = await supabase
         .from('animal_listings')
-        .select('*')
+        .select('id, title, description, price, currency, images, location, animal_type, breed, age_months, gender, quantity, is_available, created_at')
         .eq('is_available', true)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -232,7 +232,7 @@ export default function MarketplacePage() {
     try {
       const { data, error } = await supabase
         .from('vegetables')
-        .select('*')
+        .select('id, title, description, price, currency, vegetable_type, variety, quantity, unit, freshness, organic, location, images, is_available, created_at')
         .eq('is_available', true)
         .order('created_at', { ascending: false })
         .limit(5);

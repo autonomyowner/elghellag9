@@ -45,59 +45,58 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch user profile
-  const fetchProfile = async (userId: string) => {
+  // Fetch user profile with timeout and retry logic
+  const fetchProfile = async (userId: string, retries = 3): Promise<boolean> => {
     try {
       console.log('Fetching profile for user:', userId)
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
+
+      // Create a timeout promise (5 seconds)
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      })
+
+      // Race between fetch and timeout
+      const { data, error } = await Promise.race([
+        supabase
+          .from('profiles')
+          .select('id, created_at, updated_at, full_name, phone, location, avatar_url, user_type, is_verified, bio, website, social_links')
+          .eq('id', userId)
+          .single(),
+        timeoutPromise
+      ]) as any
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.log('Profile not found, creating new profile...')
-          // Create profile if it doesn't exist
-          const newProfile = {
-            id: userId,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            full_name: null,
-            phone: null,
-            location: null,
-            avatar_url: null,
-            user_type: 'farmer' as const,
-            is_verified: false,
-            bio: null,
-            website: null,
-            social_links: {},
-          }
-          
-          const { data: createdProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert([newProfile])
-            .select()
-            .single()
+          console.log('Profile not found. The handle_new_user trigger should create it automatically.')
 
-          if (createError) {
-            console.error('Error creating profile:', createError)
-          } else {
-            console.log('Profile created successfully:', createdProfile)
-            setProfile(createdProfile)
+          // Wait a bit and retry (the trigger might be creating it)
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            return fetchProfile(userId, retries - 1)
           }
+
+          console.error('Profile still not found after retries. Please check database triggers.')
+          return false
         } else {
           console.error('Error fetching profile:', error)
+          return false
         }
-        return
       }
 
       if (data) {
         console.log('Profile fetched successfully:', data)
         setProfile(data)
+        return true
       }
+
+      return false
     } catch (error) {
-      console.error('Error in fetchProfile:', error)
+      if (error instanceof Error && error.message === 'Profile fetch timeout') {
+        console.error('Profile fetch timed out after 5 seconds')
+      } else {
+        console.error('Error in fetchProfile:', error)
+      }
+      return false
     }
   }
 
@@ -109,21 +108,11 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         const { data: { session } } = await supabase.auth.getSession()
         setSession(session)
         setUser(session?.user ?? null)
-        
+
         if (session?.user) {
-          // Set a timeout for profile fetching to prevent long loading
-          const profileTimeout = setTimeout(() => {
-            setLoading(false)
-          }, 3000) // 3 second timeout
-          
-          try {
-            await fetchProfile(session.user.id)
-          } catch (error) {
-            console.error('Profile fetch error:', error)
-          } finally {
-            clearTimeout(profileTimeout)
-            setLoading(false)
-          }
+          // Fetch profile with built-in timeout
+          await fetchProfile(session.user.id)
+          setLoading(false)
         } else {
           setLoading(false)
         }
@@ -140,13 +129,9 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       async (event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
-        
+
         if (session?.user) {
-          try {
-            await fetchProfile(session.user.id)
-          } catch (error) {
-            console.error('Profile fetch error:', error)
-          }
+          await fetchProfile(session.user.id)
         } else {
           setProfile(null)
         }
@@ -335,11 +320,13 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
     try {
       const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+      const fileName = `${user.id}/${user.id}-${Date.now()}.${fileExt}`
 
       const { data, error } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file)
+        .upload(fileName, file, {
+          upsert: true
+        })
 
       if (error) {
         return { error }
