@@ -38,8 +38,10 @@ export default function NewNurseryPage() {
     contact_phone: '',
   });
 
-  const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -52,27 +54,27 @@ export default function NewNurseryPage() {
     const files = e.target.files;
     if (!files) return;
 
-    const newImages: string[] = [];
-    for (let i = 0; i < files.length && images.length + newImages.length < 5; i++) {
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (let i = 0; i < files.length && imageFiles.length + newFiles.length < 5; i++) {
       const file = files[i];
       if (file.size > 5 * 1024 * 1024) {
         setError('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
         continue;
       }
-
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
-      });
-      newImages.push(base64);
+      newFiles.push(file);
+      newPreviews.push(URL.createObjectURL(file));
     }
 
-    setImages(prev => [...prev, ...newImages]);
+    setImageFiles(prev => [...prev, ...newFiles]);
+    setImagePreviews(prev => [...prev, ...newPreviews]);
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    URL.revokeObjectURL(imagePreviews[index]);
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

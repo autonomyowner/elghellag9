@@ -11,8 +11,10 @@ const NewVegetableListingPage: React.FC = () => {
   const { user } = useUser();
   const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -47,32 +49,28 @@ const NewVegetableListingPage: React.FC = () => {
     const files = e.target.files;
     if (!files) return;
 
-    const newImages: string[] = [];
-    
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
     Array.from(files).forEach(file => {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         setError('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
         return;
       }
-      
-      convertImageToBase64(file).then(base64 => {
-        newImages.push(base64);
-        setImages(prev => [...prev, ...newImages]);
-      });
+      if (imageFiles.length + newFiles.length < 5) {
+        newFiles.push(file);
+        newPreviews.push(URL.createObjectURL(file));
+      }
     });
+
+    setImageFiles(prev => [...prev, ...newFiles]);
+    setImagePreviews(prev => [...prev, ...newPreviews]);
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const convertImageToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    URL.revokeObjectURL(imagePreviews[index]);
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

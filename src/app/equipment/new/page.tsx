@@ -40,8 +40,10 @@ export default function NewEquipmentPage() {
     hours_used: '',
   });
 
-  const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -54,27 +56,27 @@ export default function NewEquipmentPage() {
     const files = e.target.files;
     if (!files) return;
 
-    const newImages: string[] = [];
-    for (let i = 0; i < files.length && images.length + newImages.length < 5; i++) {
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (let i = 0; i < files.length && imageFiles.length + newFiles.length < 5; i++) {
       const file = files[i];
       if (file.size > 5 * 1024 * 1024) {
         setError('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
         continue;
       }
-
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
-      });
-      newImages.push(base64);
+      newFiles.push(file);
+      newPreviews.push(URL.createObjectURL(file));
     }
 
-    setImages(prev => [...prev, ...newImages]);
+    setImageFiles(prev => [...prev, ...newFiles]);
+    setImagePreviews(prev => [...prev, ...newPreviews]);
   };
 
   const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    URL.revokeObjectURL(imagePreviews[index]);
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,6 +92,21 @@ export default function NewEquipmentPage() {
       const token = await getToken();
       if (!token) throw new Error('يرجى تسجيل الدخول أولاً');
 
+      // Upload images to R2
+      let imageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        setUploadingImages(true);
+        try {
+          const uploadResult = await apiClient.uploadFiles(token, imageFiles, 'equipment');
+          imageUrls = uploadResult.urls || [];
+        } catch (uploadErr) {
+          console.error('Image upload failed:', uploadErr);
+          // Continue without images if upload fails
+        } finally {
+          setUploadingImages(false);
+        }
+      }
+
       const equipmentData = {
         title: formData.title,
         description: formData.description || null,
@@ -102,7 +119,7 @@ export default function NewEquipmentPage() {
         model: formData.model || null,
         year: formData.year ? parseInt(formData.year) : null,
         hours_used: formData.hours_used ? parseInt(formData.hours_used) : null,
-        images: images,
+        images: imageUrls,
         is_available: true,
         is_featured: false,
       };
@@ -151,7 +168,7 @@ export default function NewEquipmentPage() {
                 <Link href="/equipment" className="btn-form-primary">
                   عرض المعدات
                 </Link>
-                <button onClick={() => { setSuccess(false); setFormData({ title: '', description: '', price: '', location: '', contact_phone: '', condition: 'good', brand: '', model: '', year: '', hours_used: '' }); setImages([]); }} className="btn-form-secondary">
+                <button onClick={() => { setSuccess(false); setFormData({ title: '', description: '', price: '', location: '', contact_phone: '', condition: 'good', brand: '', model: '', year: '', hours_used: '' }); setImageFiles([]); setImagePreviews([]); }} className="btn-form-secondary">
                   إضافة أخرى
                 </button>
               </div>
@@ -328,9 +345,9 @@ export default function NewEquipmentPage() {
                     className="hidden"
                   />
                 </div>
-                {images.length > 0 && (
+                {imagePreviews.length > 0 && (
                   <div className="form-image-grid">
-                    {images.map((img, index) => (
+                    {imagePreviews.map((img, index) => (
                       <div key={index} className="form-image-preview">
                         <Image src={img} alt={`صورة ${index + 1}`} fill className="object-cover" />
                         <button
@@ -351,8 +368,8 @@ export default function NewEquipmentPage() {
                 <Link href="/equipment" className="btn-form-secondary">
                   إلغاء
                 </Link>
-                <button type="submit" disabled={loading} className="btn-form-primary">
-                  {loading ? 'جاري الإضافة...' : 'إضافة المعدات'}
+                <button type="submit" disabled={loading || uploadingImages} className="btn-form-primary">
+                  {uploadingImages ? 'جاري رفع الصور...' : loading ? 'جاري الإضافة...' : 'إضافة المعدات'}
                 </button>
               </div>
             </form>
