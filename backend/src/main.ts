@@ -15,6 +15,9 @@ async function bootstrap() {
       'http://localhost:3003',
       'https://www.elghella.com',
       'https://elghella.com',
+      'https://elghella-v3-omega.vercel.app',
+      'https://elghella-marketplace.vercel.app',
+      /\.vercel\.app$/,
     ],
     credentials: true,
   });
