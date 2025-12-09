@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSupabaseData } from '@/hooks/useSupabase';
 import Link from 'next/link';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { useUser } from '@clerk/nextjs';
+import { apiClient } from '@/lib/api/client';
 import UnifiedHero from '@/components/marketplace/UnifiedHero';
 import UnifiedFilterBar from '@/components/marketplace/UnifiedFilterBar';
 import QuickScanCard, { QuickScanCardSkeleton } from '@/components/marketplace/QuickScanCard';
@@ -37,8 +37,7 @@ const sortOptions = [
 ]
 
 export default function AnimalsListingsPage() {
-  const { getAnimals } = useSupabaseData();
-  const { user } = useSupabaseAuth();
+  const { user } = useUser();
   const [listings, setListings] = useState<AnimalListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,12 +56,13 @@ export default function AnimalsListingsPage() {
       setError(null);
       setLoading(true);
 
-      const filters = {
-        animal_type: selectedCategory === 'all' ? undefined : selectedCategory,
-      };
+      const filters: Record<string, string> = {};
+      if (selectedCategory !== 'all') {
+        filters.animal_type = selectedCategory;
+      }
 
-      const data = await getAnimals(filters);
-      let animalData = data || [];
+      const response = await apiClient.getAnimals(filters) as any;
+      let animalData = response?.items || response || [];
 
       // Apply search filter
       if (searchTerm) {
@@ -95,7 +95,7 @@ export default function AnimalsListingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [getAnimals, selectedCategory, searchTerm, sortBy]);
+  }, [selectedCategory, searchTerm, sortBy]);
 
   useEffect(() => {
     if (!isHydrated) return;

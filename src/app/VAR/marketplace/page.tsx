@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { useUser } from '@clerk/nextjs';
+import { apiClient } from '@/lib/api/client';
 import UnifiedHero from '@/components/marketplace/UnifiedHero';
 import UnifiedFilterBar from '@/components/marketplace/UnifiedFilterBar';
 import QuickScanCard, { QuickScanCardSkeleton } from '@/components/marketplace/QuickScanCard';
@@ -39,8 +39,7 @@ const sortOptions = [
 ]
 
 export default function VegetablesMarketplacePage() {
-  const { getVegetables } = useSupabaseData();
-  const { user } = useSupabaseAuth();
+  const { user } = useUser();
   const [listings, setListings] = useState<VegetableListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,12 +58,13 @@ export default function VegetablesMarketplacePage() {
       setError(null);
       setLoading(true);
 
-      const filters = {
-        vegetable_type: selectedCategory === 'all' ? undefined : selectedCategory,
-      };
+      const filters: Record<string, string> = {};
+      if (selectedCategory !== 'all') {
+        filters.vegetable_type = selectedCategory;
+      }
 
-      const data = await getVegetables(filters);
-      let vegData = data || [];
+      const response = await apiClient.getVegetables(filters) as any;
+      let vegData = response?.items || response || [];
 
       // Apply search filter
       if (searchTerm) {
@@ -97,7 +97,7 @@ export default function VegetablesMarketplacePage() {
     } finally {
       setLoading(false);
     }
-  }, [getVegetables, selectedCategory, searchTerm, sortBy]);
+  }, [selectedCategory, searchTerm, sortBy]);
 
   useEffect(() => {
     if (!isHydrated) return;

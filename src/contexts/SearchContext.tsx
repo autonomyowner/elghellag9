@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/lib/supabase/supabaseClient';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { apiClient } from '@/lib/api/client';
 
 export interface SearchResult {
   id: string;
@@ -61,7 +61,7 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
   // Add recent search
   const addRecentSearch = useCallback((term: string) => {
     if (!term.trim()) return;
-    
+
     const trimmedTerm = term.trim();
     const updated = [trimmedTerm, ...recentSearches.filter(s => s !== trimmedTerm)].slice(0, 10);
     setRecentSearches(updated);
@@ -84,14 +84,14 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       'معدات', 'آلات', 'أدوات', 'مكائن', 'قطع غيار'
     ];
 
-    const filtered = commonTerms.filter(term => 
+    const filtered = commonTerms.filter(term =>
       term.includes(query) || query.includes(term)
     ).slice(0, 8);
 
     setSuggestions(filtered);
   }, []);
 
-  // Main search function
+  // Main search function using apiClient
   const search = useCallback(async (query: string) => {
     if (!query.trim()) {
       setResults([]);
@@ -107,18 +107,10 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
       const searchResults: SearchResult[] = [];
 
       // Search in equipment
-      const { data: equipmentData, error: equipmentError } = await supabase
-        .from('equipment')
-        .select('*')
-        .or(`title.ilike.%${query}%,description.ilike.%${query}%,brand.ilike.%${query}%,model.ilike.%${query}%`)
-        .eq('is_available', true)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (equipmentError) {
-        console.error('Equipment search error:', equipmentError);
-      } else if (equipmentData) {
-        equipmentData.forEach(item => {
+      try {
+        const equipmentResponse = await apiClient.getEquipment({ search: query, limit: '10' }) as any;
+        const equipmentData = equipmentResponse?.items || equipmentResponse || [];
+        equipmentData.forEach((item: any) => {
           searchResults.push({
             id: item.id,
             type: 'equipment',
@@ -134,21 +126,15 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
             url: `/equipment/${item.id}`
           });
         });
+      } catch (err) {
+        console.error('Equipment search error:', err);
       }
 
       // Search in land listings
-      const { data: landData, error: landError } = await supabase
-        .from('land_listings')
-        .select('*')
-        .or(`title.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%`)
-        .eq('is_available', true)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (landError) {
-        console.error('Land search error:', landError);
-      } else if (landData) {
-        landData.forEach(item => {
+      try {
+        const landResponse = await apiClient.getLand({ search: query, limit: '10' }) as any;
+        const landData = landResponse?.items || landResponse || [];
+        landData.forEach((item: any) => {
           searchResults.push({
             id: item.id,
             type: 'land',
@@ -163,111 +149,86 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
             url: `/land/${item.id}`
           });
         });
+      } catch (err) {
+        console.error('Land search error:', err);
       }
 
-      // Search in vegetables (if table exists)
+      // Search in vegetables
       try {
-        const { data: vegetablesData, error: vegetablesError } = await supabase
-          .from('vegetables')
-          .select('*')
-          .or(`title.ilike.%${query}%,description.ilike.%${query}%,vegetable_type.ilike.%${query}%`)
-          .eq('is_available', true)
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        if (!vegetablesError && vegetablesData) {
-          vegetablesData.forEach(item => {
-            searchResults.push({
-              id: item.id,
-              type: 'vegetable',
-              title: item.title,
-              description: item.description,
-              price: item.price,
-              currency: item.currency,
-              location: item.location,
-              image: item.images?.[0],
-              category: 'خضروات وفواكه',
-              created_at: item.created_at,
-              url: `/VAR/marketplace/${item.id}`
-            });
+        const vegetablesResponse = await apiClient.getVegetables({ search: query, limit: '10' }) as any;
+        const vegetablesData = vegetablesResponse?.items || vegetablesResponse || [];
+        vegetablesData.forEach((item: any) => {
+          searchResults.push({
+            id: item.id,
+            type: 'vegetable',
+            title: item.title,
+            description: item.description,
+            price: item.price,
+            currency: item.currency,
+            location: item.location,
+            image: item.images?.[0],
+            category: 'خضروات وفواكه',
+            created_at: item.created_at,
+            url: `/VAR/marketplace/${item.id}`
           });
-        }
-      } catch (error) {
-        // Table might not exist, ignore
-        console.log('Vegetables table not available');
+        });
+      } catch (err) {
+        console.error('Vegetables search error:', err);
       }
 
-      // Search in animals (if table exists)
+      // Search in animals
       try {
-        const { data: animalsData, error: animalsError } = await supabase
-          .from('animal_listings')
-          .select('*')
-          .or(`title.ilike.%${query}%,description.ilike.%${query}%,animal_type.ilike.%${query}%`)
-          .eq('is_available', true)
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        if (!animalsError && animalsData) {
-          animalsData.forEach(item => {
-            searchResults.push({
-              id: item.id,
-              type: 'animal',
-              title: item.title,
-              description: item.description,
-              price: item.price,
-              currency: item.currency,
-              location: item.location,
-              image: item.images?.[0],
-              category: 'حيوانات',
-              created_at: item.created_at,
-              url: `/animals/${item.id}`
-            });
+        const animalsResponse = await apiClient.getAnimals({ search: query, limit: '10' }) as any;
+        const animalsData = animalsResponse?.items || animalsResponse || [];
+        animalsData.forEach((item: any) => {
+          searchResults.push({
+            id: item.id,
+            type: 'animal',
+            title: item.title,
+            description: item.description,
+            price: item.price,
+            currency: item.currency,
+            location: item.location,
+            image: item.images?.[0],
+            category: 'حيوانات',
+            created_at: item.created_at,
+            url: `/animals/${item.id}`
           });
-        }
-      } catch (error) {
-        // Table might not exist, ignore
-        console.log('Animals table not available');
+        });
+      } catch (err) {
+        console.error('Animals search error:', err);
       }
 
-      // Search in nurseries (if table exists)
+      // Search in nurseries
       try {
-        const { data: nurseriesData, error: nurseriesError } = await supabase
-          .from('nurseries')
-          .select('*')
-          .or(`title.ilike.%${query}%,description.ilike.%${query}%,plant_type.ilike.%${query}%`)
-          .eq('is_available', true)
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        if (!nurseriesError && nurseriesData) {
-          nurseriesData.forEach(item => {
-            searchResults.push({
-              id: item.id,
-              type: 'nursery',
-              title: item.title,
-              description: item.description,
-              price: item.price,
-              currency: item.currency,
-              location: item.location,
-              image: item.images?.[0],
-              category: 'مشاتل',
-              created_at: item.created_at,
-              url: `/nurseries/${item.id}`
-            });
+        const nurseriesResponse = await apiClient.getNurseries({ search: query, limit: '10' }) as any;
+        const nurseriesData = nurseriesResponse?.items || nurseriesResponse || [];
+        nurseriesData.forEach((item: any) => {
+          searchResults.push({
+            id: item.id,
+            type: 'nursery',
+            title: item.title,
+            description: item.description,
+            price: item.price,
+            currency: item.currency,
+            location: item.location,
+            image: item.images?.[0],
+            category: 'مشاتل',
+            created_at: item.created_at,
+            url: `/nurseries/${item.id}`
           });
-        }
-      } catch (error) {
-        // Table might not exist, ignore
-        console.log('Nurseries table not available');
+        });
+      } catch (err) {
+        console.error('Nurseries search error:', err);
       }
 
       // Sort results by relevance (exact matches first, then partial matches)
       const sortedResults = searchResults.sort((a, b) => {
-        const aExact = a.title.toLowerCase().includes(query.toLowerCase()) || 
+        const aExact = a.title.toLowerCase().includes(query.toLowerCase()) ||
                       a.description?.toLowerCase().includes(query.toLowerCase());
-        const bExact = b.title.toLowerCase().includes(query.toLowerCase()) || 
+        const bExact = b.title.toLowerCase().includes(query.toLowerCase()) ||
                       b.description?.toLowerCase().includes(query.toLowerCase());
-        
+
         if (aExact && !bExact) return -1;
         if (!aExact && bExact) return 1;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -321,4 +282,4 @@ export function useSearch() {
     throw new Error('useSearch must be used within a SearchProvider');
   }
   return context;
-} 
+}

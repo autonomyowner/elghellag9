@@ -10,7 +10,6 @@ const ConditionalHeader = dynamic(() => import("@/components/ConditionalHeader")
   loading: () => <div className="h-16 bg-black/20 animate-pulse" />
 });
 
-import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
 import { SearchProvider } from "@/contexts/SearchContext";
 
 // Single performance optimizer - removed duplicate CLSOptimizer and AggressiveCLSPrevention
@@ -77,15 +76,13 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <SupabaseAuthProvider>
-      <SearchProvider>
-        <PerformanceOptimizer />
-        <ConditionalHeader />
-        <main className="min-h-screen">
-          {children}
-        </main>
-      </SearchProvider>
-    </SupabaseAuthProvider>
+    <SearchProvider>
+      <PerformanceOptimizer />
+      <ConditionalHeader />
+      <main className="min-h-screen">
+        {children}
+      </main>
+    </SearchProvider>
   );
 };
 

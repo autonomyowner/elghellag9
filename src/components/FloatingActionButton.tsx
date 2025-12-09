@@ -4,18 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Tractor, MapPin, X } from 'lucide-react';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
 const FloatingActionButton = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useSupabaseAuth();
+  const { user } = useUser();
   const router = useRouter();
 
   const handleAddClick = () => {
     if (!user) {
       // Redirect to login if not authenticated
-      router.push('/auth/login');
+      router.push('/sign-in');
       return;
     }
     setIsOpen(!isOpen);

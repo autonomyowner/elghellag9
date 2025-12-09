@@ -1,10 +1,8 @@
 'use client';
 
-// Force redeploy - auth environment variables fix
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
-import { useWebsiteSettings } from '@/lib/websiteSettings';
+import { useUser } from '@clerk/nextjs';
 import { useSearch } from '@/contexts/SearchContext';
 import {
   MapPin,
@@ -37,24 +35,15 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
-  const { user, signOut, profile } = useSupabaseAuth();
-  const { settings, loading } = useWebsiteSettings();
+  const { user } = useUser();
   const { searchTerm, setSearchTerm, search, results, loading: searchLoading } = useSearch();
   const [isHydrated, setIsHydrated] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('جميع الفئات');
   const [videoLoaded, setVideoLoaded] = useState(false);
-  
+
   useEffect(() => {
     setIsHydrated(true);
   }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
 
   // Optimized loading state
   if (!isHydrated) {
