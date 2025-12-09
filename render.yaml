@@ -34,5 +34,5 @@ databases:
   - name: elghella-db
     databaseName: elghella
     user: elghella
-    plan: free
+    plan: basic-256mb
     region: frankfurt
