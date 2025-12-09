@@ -275,111 +275,112 @@ const Header: React.FC = () => {
           <div className="md:hidden fixed inset-0 z-50">
             {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/50"
               onClick={() => setShowMobileMenu(false)}
             />
 
             {/* Drawer Panel */}
-            <div className="absolute top-0 right-0 h-full w-[85%] max-w-[320px] bg-[#f5f3f0] shadow-2xl">
+            <div className="absolute top-0 right-0 h-full w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col">
               {/* Golden Accent Line */}
-              <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-[#d4af37] via-[#ffd700] to-[#d4af37]" />
+              <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-[#d4af37] via-[#ffd700] to-[#d4af37] z-10" />
 
               {/* Header */}
-              <div className="relative px-6 pt-6 pb-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f]">
-                <button
-                  onClick={() => setShowMobileMenu(false)}
-                  className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white/90 active:bg-white/20"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-
-                <div className="flex items-center gap-3 mt-2">
-                  <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-lg">
-                    <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
+              <div className="flex-shrink-0 px-5 pt-5 pb-4 bg-[#2d5016]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-[#d4af37]/50">
+                      <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-white">الغلة</h2>
+                      <p className="text-xs text-white/70">منصة المزارعين</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-white">الغلة</h2>
-                    <p className="text-sm text-white/70">منصة المزارعين</p>
-                  </div>
+                  <button
+                    onClick={() => setShowMobileMenu(false)}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 
-              {/* Navigation Content */}
-              <nav className="px-4 py-6 overflow-y-auto h-[calc(100%-180px)]">
+              {/* Navigation Content - Scrollable */}
+              <nav className="flex-1 overflow-y-auto px-4 py-4">
                 {/* Main Navigation */}
                 <div className="space-y-1">
                   {navigationItems.map((item, index) => (
                     <Link
                       key={index}
                       href={item.href}
-                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-[#2d5016] active:bg-[#2d5016]/10"
+                      className="block px-4 py-3 rounded-lg text-[#2d5016] text-base font-semibold active:bg-gray-100"
                       onClick={() => setShowMobileMenu(false)}
                     >
-                      <span className="text-lg font-semibold">{item.label}</span>
+                      {item.label}
                     </Link>
                   ))}
                 </div>
 
                 {/* Divider */}
-                <div className="my-5 h-px bg-gradient-to-l from-transparent via-[#d4af37]/30 to-transparent" />
+                <div className="my-4 h-px bg-[#d4af37]/30" />
 
                 {loading ? (
-                  <div className="flex justify-center py-8">
-                    <div className="w-8 h-8 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
+                  <div className="flex justify-center py-6">
+                    <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
                   </div>
                 ) : user ? (
                   <div className="space-y-1">
-                    {/* User Info Card */}
-                    <div className="px-4 py-4 mb-4 bg-gradient-to-l from-[#2d5016]/5 to-transparent rounded-xl border border-[#2d5016]/10">
-                      <p className="text-base font-bold text-[#2d5016]">{user?.fullName || user?.firstName || 'المستخدم'}</p>
-                      <p className="text-sm text-[#2d5016]/60 mt-0.5">{user?.primaryEmailAddress?.emailAddress}</p>
+                    {/* User Info */}
+                    <div className="px-4 py-3 mb-2 bg-gray-50 rounded-lg">
+                      <p className="text-sm font-bold text-[#2d5016]">{user?.fullName || user?.firstName || 'المستخدم'}</p>
+                      <p className="text-xs text-gray-500">{user?.primaryEmailAddress?.emailAddress}</p>
                     </div>
 
                     <Link
                       href="/dashboard"
-                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-[#2d5016] active:bg-[#2d5016]/10"
+                      className="block px-4 py-3 rounded-lg text-[#2d5016] text-base font-semibold active:bg-gray-100"
                       onClick={() => setShowMobileMenu(false)}
                     >
-                      <span className="text-lg font-semibold">لوحة التحكم</span>
+                      لوحة التحكم
                     </Link>
 
                     <Link
                       href="/profile"
-                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-[#2d5016] active:bg-[#2d5016]/10"
+                      className="block px-4 py-3 rounded-lg text-[#2d5016] text-base font-semibold active:bg-gray-100"
                       onClick={() => setShowMobileMenu(false)}
                     >
-                      <span className="text-lg font-semibold">الملف الشخصي</span>
+                      الملف الشخصي
                     </Link>
 
                     {/* Marketplace CTA */}
                     <Link
                       href="/marketplace"
-                      className="flex items-center justify-center gap-3 px-4 py-4 mt-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f] text-white rounded-xl shadow-lg shadow-[#2d5016]/20 active:opacity-90"
+                      className="block px-4 py-3 mt-3 bg-[#2d5016] text-white text-center text-base font-bold rounded-lg active:opacity-90"
                       onClick={() => setShowMobileMenu(false)}
                     >
-                      <span className="text-lg font-bold">السوق</span>
+                      السوق
                     </Link>
 
                     {/* Logout */}
                     <button
                       onClick={openLogoutConfirmation}
-                      className="w-full flex items-center gap-4 px-4 py-4 mt-4 rounded-xl text-red-600 active:bg-red-50"
+                      className="w-full px-4 py-3 mt-2 rounded-lg text-red-600 text-base font-semibold text-right active:bg-red-50"
                     >
-                      <span className="text-lg font-semibold">تسجيل الخروج</span>
+                      تسجيل الخروج
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <Link
                       href="/sign-in"
-                      className="block w-full text-center px-4 py-4 text-[#2d5016] font-bold text-lg border-2 border-[#2d5016]/20 rounded-xl active:bg-[#2d5016]/5"
+                      className="block w-full text-center px-4 py-3 text-[#2d5016] font-bold text-base border-2 border-[#2d5016]/20 rounded-lg active:bg-gray-50"
                       onClick={() => setShowMobileMenu(false)}
                     >
                       دخول
                     </Link>
                     <Link
                       href="/sign-up"
-                      className="block w-full text-center px-4 py-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#2d5016]/20 active:opacity-90"
+                      className="block w-full text-center px-4 py-3 bg-[#2d5016] text-white font-bold text-base rounded-lg active:opacity-90"
                       onClick={() => setShowMobileMenu(false)}
                     >
                       تسجيل
@@ -389,9 +390,8 @@ const Header: React.FC = () => {
               </nav>
 
               {/* Footer */}
-              <div className="absolute bottom-0 left-0 right-0 px-6 py-4 bg-gradient-to-t from-[#f5f3f0] to-transparent">
-                <div className="h-px bg-gradient-to-l from-transparent via-[#d4af37]/20 to-transparent mb-4" />
-                <p className="text-center text-sm text-[#2d5016]/40 font-medium">
+              <div className="flex-shrink-0 px-5 py-3 border-t border-gray-200">
+                <p className="text-center text-xs text-gray-400">
                   © {new Date().getFullYear()} الغلة
                 </p>
               </div>
