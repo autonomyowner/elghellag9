@@ -97,10 +97,11 @@ const Header: React.FC = () => {
   ];
 
   return (
-    <header 
+    <>
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-white/20' 
+        isScrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-white/20'
           : 'bg-transparent backdrop-blur-sm'
       }`}
     >
@@ -278,136 +279,145 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
+    </header>
 
       {/* Mobile Menu - Full Screen Drawer */}
-      {showMobileMenu && (
-        <div className="md:hidden fixed inset-0 z-[9999]">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/60 animate-fade-in"
-            onClick={() => setShowMobileMenu(false)}
-          />
+      <div
+        className={`md:hidden fixed inset-0 z-[9999] ${
+          showMobileMenu ? '' : 'pointer-events-none'
+        }`}
+      >
+        {/* Backdrop */}
+        <div
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-200 ease-out ${
+            showMobileMenu ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={() => setShowMobileMenu(false)}
+        />
 
-          {/* Drawer Panel - slides in from right for RTL */}
-          <div className="absolute top-0 right-0 h-full w-[280px] max-w-[85vw] bg-white shadow-2xl flex flex-col animate-slide-in-rtl overflow-hidden">
-            {/* Golden Accent Line */}
-            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-[#d4af37] via-[#ffd700] to-[#d4af37] z-10" />
+        {/* Drawer Panel - slides in from right for RTL */}
+        <div
+          className={`absolute top-0 right-0 h-full w-[85vw] max-w-[320px] bg-white shadow-2xl flex flex-col transition-transform duration-200 ease-out ${
+            showMobileMenu ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          {/* Golden Accent Line */}
+          <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-[#d4af37] via-[#ffd700] to-[#d4af37]" />
 
-            {/* Header */}
-            <div className="flex-shrink-0 px-4 pt-4 pb-3 bg-[#2d5016]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-[#d4af37]/50">
-                    <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-bold text-white">الغلة</h2>
-                    <p className="text-xs text-white/70">منصة المزارعين</p>
-                  </div>
+          {/* Header */}
+          <div className="flex-shrink-0 px-5 py-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-[#d4af37]/60 shadow-lg">
+                  <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
                 </div>
-                <button
-                  onClick={() => setShowMobileMenu(false)}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white active:bg-white/20"
-                  aria-label="إغلاق القائمة"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div>
+                  <h2 className="text-lg font-bold text-white">الغلة</h2>
+                  <p className="text-xs text-white/80">منصة المزارعين</p>
+                </div>
               </div>
-            </div>
-
-            {/* Navigation Content - Scrollable */}
-            <nav className="flex-1 overflow-y-auto px-3 py-4 overscroll-contain">
-              {/* Main Navigation */}
-              <div className="space-y-1">
-                {navigationItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.href}
-                    className="flex items-center px-4 py-3.5 rounded-xl text-[#2d5016] text-base font-semibold active:bg-[#2d5016]/10 transition-colors min-h-[48px]"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              {/* Divider */}
-              <div className="my-4 h-px bg-[#d4af37]/30" />
-
-              {loading ? (
-                <div className="flex justify-center py-6">
-                  <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : user ? (
-                <div className="space-y-1">
-                  {/* User Info */}
-                  <div className="px-4 py-3 mb-3 bg-gray-50 rounded-xl">
-                    <p className="text-sm font-bold text-[#2d5016] truncate">{user?.fullName || user?.firstName || 'المستخدم'}</p>
-                    <p className="text-xs text-gray-500 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
-                  </div>
-
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center px-4 py-3.5 rounded-xl text-[#2d5016] text-base font-semibold active:bg-[#2d5016]/10 transition-colors min-h-[48px]"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    لوحة التحكم
-                  </Link>
-
-                  <Link
-                    href="/profile"
-                    className="flex items-center px-4 py-3.5 rounded-xl text-[#2d5016] text-base font-semibold active:bg-[#2d5016]/10 transition-colors min-h-[48px]"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    الملف الشخصي
-                  </Link>
-
-                  {/* Marketplace CTA */}
-                  <Link
-                    href="/marketplace"
-                    className="flex items-center justify-center px-4 py-3.5 mt-3 bg-[#2d5016] text-white text-base font-bold rounded-xl active:bg-[#1a3d0f] transition-colors min-h-[48px]"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    السوق
-                  </Link>
-
-                  {/* Logout */}
-                  <button
-                    onClick={openLogoutConfirmation}
-                    className="w-full flex items-center px-4 py-3.5 mt-2 rounded-xl text-red-600 text-base font-semibold active:bg-red-50 transition-colors min-h-[48px]"
-                  >
-                    تسجيل الخروج
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Link
-                    href="/sign-in"
-                    className="flex items-center justify-center w-full px-4 py-3.5 text-[#2d5016] font-bold text-base border-2 border-[#2d5016]/20 rounded-xl active:bg-gray-50 transition-colors min-h-[48px]"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    دخول
-                  </Link>
-                  <Link
-                    href="/sign-up"
-                    className="flex items-center justify-center w-full px-4 py-3.5 bg-[#2d5016] text-white font-bold text-base rounded-xl active:bg-[#1a3d0f] transition-colors min-h-[48px]"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    تسجيل
-                  </Link>
-                </div>
-              )}
-            </nav>
-
-            {/* Footer */}
-            <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-gray-50">
-              <p className="text-center text-xs text-gray-400">
-                © {new Date().getFullYear()} الغلة
-              </p>
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/15 text-white active:bg-white/25 transition-colors"
+                aria-label="إغلاق القائمة"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
           </div>
+
+          {/* Navigation Content - Scrollable */}
+          <nav className="flex-1 overflow-y-auto px-4 py-5 overscroll-contain">
+            {/* Main Navigation */}
+            <div className="space-y-1.5">
+              {navigationItems.map((item, index) => (
+                <Link
+                  key={index}
+                  href={item.href}
+                  className="flex items-center px-4 py-4 rounded-xl text-[#2d5016] text-base font-semibold hover:bg-[#2d5016]/5 active:bg-[#2d5016]/10 transition-colors"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="my-5 h-px bg-gradient-to-l from-[#d4af37]/40 to-transparent" />
+
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <div className="w-7 h-7 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : user ? (
+              <div className="space-y-1.5">
+                {/* User Info */}
+                <div className="px-4 py-4 mb-4 bg-gradient-to-l from-gray-50 to-white rounded-xl border border-gray-100">
+                  <p className="text-sm font-bold text-[#2d5016] truncate">{user?.fullName || user?.firstName || 'المستخدم'}</p>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">{user?.primaryEmailAddress?.emailAddress}</p>
+                </div>
+
+                <Link
+                  href="/dashboard"
+                  className="flex items-center px-4 py-4 rounded-xl text-[#2d5016] text-base font-semibold hover:bg-[#2d5016]/5 active:bg-[#2d5016]/10 transition-colors"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  لوحة التحكم
+                </Link>
+
+                <Link
+                  href="/profile"
+                  className="flex items-center px-4 py-4 rounded-xl text-[#2d5016] text-base font-semibold hover:bg-[#2d5016]/5 active:bg-[#2d5016]/10 transition-colors"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  الملف الشخصي
+                </Link>
+
+                {/* Marketplace CTA */}
+                <Link
+                  href="/marketplace"
+                  className="flex items-center justify-center px-4 py-4 mt-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f] text-white text-base font-bold rounded-xl active:opacity-90 transition-all shadow-md"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  السوق
+                </Link>
+
+                {/* Logout */}
+                <button
+                  onClick={openLogoutConfirmation}
+                  className="w-full flex items-center justify-center px-4 py-4 mt-2 rounded-xl text-red-600 text-base font-semibold border border-red-100 hover:bg-red-50 active:bg-red-100 transition-colors"
+                >
+                  تسجيل الخروج
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Link
+                  href="/sign-in"
+                  className="flex items-center justify-center w-full px-4 py-4 text-[#2d5016] font-bold text-base border-2 border-[#2d5016]/20 rounded-xl hover:border-[#2d5016]/40 active:bg-gray-50 transition-all"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  دخول
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="flex items-center justify-center w-full px-4 py-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f] text-white font-bold text-base rounded-xl active:opacity-90 transition-all shadow-md"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  تسجيل
+                </Link>
+              </div>
+            )}
+          </nav>
+
+          {/* Footer */}
+          <div className="flex-shrink-0 px-5 py-4 border-t border-gray-100 bg-gray-50/80">
+            <p className="text-center text-xs text-gray-400">
+              © {new Date().getFullYear()} الغلة
+            </p>
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Logout Confirmation Modal */}
       <LogoutConfirmation
@@ -416,7 +426,7 @@ const Header: React.FC = () => {
         onConfirm={handleSignOut}
         loading={logoutLoading}
       />
-    </header>
+    </>
   );
 };
 
