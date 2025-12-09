@@ -40,10 +40,32 @@ export default function HomePage() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('جميع الفئات');
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  // Try to play video on mount (for browsers that need user interaction)
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const video = document.querySelector('video') as HTMLVideoElement;
+    if (video) {
+      // Try to play the video
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setVideoLoaded(true);
+          })
+          .catch(() => {
+            // Autoplay was prevented, show fallback
+            setVideoError(true);
+          });
+      }
+    }
+  }, [isHydrated]);
 
   // Optimized loading state
   if (!isHydrated) {
@@ -182,21 +204,28 @@ export default function HomePage() {
     <div className="min-h-screen min-w-[320px] mx-auto bg-gradient-to-br from-green-900 to-gray-900 text-white">
       {/* Hero Section with Optimized Video Background */}
       <div id="hero" className="relative h-screen w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden max-w-none">
-        <video 
-          autoPlay 
-          loop 
-          playsInline 
+        {/* Fallback background image */}
+        <div
+          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${videoLoaded && !videoError ? 'opacity-0' : 'opacity-100'}`}
+          style={{ backgroundImage: 'url(/assets/land01.jpg)' }}
+        />
+
+        <video
+          autoPlay
+          loop
+          playsInline
           muted
-          preload="metadata"
-          className="object-cover w-screen h-full absolute top-0 left-0 z-0 min-w-full min-h-full"
+          preload="auto"
+          poster="/assets/land01.jpg"
+          className={`object-cover w-screen h-full absolute top-0 left-0 z-0 min-w-full min-h-full transition-opacity duration-500 ${videoLoaded && !videoError ? 'opacity-100' : 'opacity-0'}`}
           onLoadedData={() => {
-            // Video loaded, remove loading state
-            const loadingElements = document.querySelectorAll('[class*="animate-spin"]');
-            loadingElements.forEach(el => {
-              if (el.classList.contains('animate-spin')) {
-                (el as HTMLElement).style.display = 'none';
-              }
-            });
+            setVideoLoaded(true);
+          }}
+          onCanPlay={() => {
+            setVideoLoaded(true);
+          }}
+          onError={() => {
+            setVideoError(true);
           }}
         >
           <source src="/assets/Videoplayback3.mp4" type="video/mp4" />
