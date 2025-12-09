@@ -58,6 +58,18 @@ const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (showMobileMenu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showMobileMenu]);
+
   const handleSignOut = async () => {
     setLogoutLoading(true);
     try {
@@ -251,155 +263,152 @@ const Header: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-3 space-x-reverse">
+          <div className="md:hidden flex items-center">
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
               className={`p-2 transition-colors duration-300 ${
-                isScrolled 
-                  ? 'text-green-700 hover:text-green-800' 
+                isScrolled
+                  ? 'text-green-700 hover:text-green-800'
                   : 'text-white/90 hover:text-white drop-shadow-md'
               }`}
+              aria-label="فتح القائمة"
             >
               {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Mobile Search */}
-        <div className="md:hidden pb-4">
-          <UnifiedSearch variant="header" />
-        </div>
+      {/* Mobile Menu - Full Screen Drawer */}
+      {showMobileMenu && (
+        <div className="md:hidden fixed inset-0 z-[9999]">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 animate-fade-in"
+            onClick={() => setShowMobileMenu(false)}
+          />
 
-        {/* Mobile Menu - Full Screen Drawer */}
-        {showMobileMenu && (
-          <div className="md:hidden fixed inset-0 z-50">
-            {/* Backdrop */}
-            <div
-              className="absolute inset-0 bg-black/50"
-              onClick={() => setShowMobileMenu(false)}
-            />
+          {/* Drawer Panel - slides in from right for RTL */}
+          <div className="absolute top-0 right-0 h-full w-[280px] max-w-[85vw] bg-white shadow-2xl flex flex-col animate-slide-in-rtl overflow-hidden">
+            {/* Golden Accent Line */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-[#d4af37] via-[#ffd700] to-[#d4af37] z-10" />
 
-            {/* Drawer Panel */}
-            <div className="absolute top-0 right-0 h-full w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col">
-              {/* Golden Accent Line */}
-              <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-[#d4af37] via-[#ffd700] to-[#d4af37] z-10" />
-
-              {/* Header */}
-              <div className="flex-shrink-0 px-5 pt-5 pb-4 bg-[#2d5016]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-[#d4af37]/50">
-                      <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-white">الغلة</h2>
-                      <p className="text-xs text-white/70">منصة المزارعين</p>
-                    </div>
+            {/* Header */}
+            <div className="flex-shrink-0 px-4 pt-4 pb-3 bg-[#2d5016]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-[#d4af37]/50">
+                    <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
                   </div>
-                  <button
-                    onClick={() => setShowMobileMenu(false)}
-                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 text-white"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+                  <div>
+                    <h2 className="text-base font-bold text-white">الغلة</h2>
+                    <p className="text-xs text-white/70">منصة المزارعين</p>
+                  </div>
                 </div>
-              </div>
-
-              {/* Navigation Content - Scrollable */}
-              <nav className="flex-1 overflow-y-auto px-4 py-4">
-                {/* Main Navigation */}
-                <div className="space-y-1">
-                  {navigationItems.map((item, index) => (
-                    <Link
-                      key={index}
-                      href={item.href}
-                      className="block px-4 py-3 rounded-lg text-[#2d5016] text-base font-semibold active:bg-gray-100"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Divider */}
-                <div className="my-4 h-px bg-[#d4af37]/30" />
-
-                {loading ? (
-                  <div className="flex justify-center py-6">
-                    <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : user ? (
-                  <div className="space-y-1">
-                    {/* User Info */}
-                    <div className="px-4 py-3 mb-2 bg-gray-50 rounded-lg">
-                      <p className="text-sm font-bold text-[#2d5016]">{user?.fullName || user?.firstName || 'المستخدم'}</p>
-                      <p className="text-xs text-gray-500">{user?.primaryEmailAddress?.emailAddress}</p>
-                    </div>
-
-                    <Link
-                      href="/dashboard"
-                      className="block px-4 py-3 rounded-lg text-[#2d5016] text-base font-semibold active:bg-gray-100"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      لوحة التحكم
-                    </Link>
-
-                    <Link
-                      href="/profile"
-                      className="block px-4 py-3 rounded-lg text-[#2d5016] text-base font-semibold active:bg-gray-100"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      الملف الشخصي
-                    </Link>
-
-                    {/* Marketplace CTA */}
-                    <Link
-                      href="/marketplace"
-                      className="block px-4 py-3 mt-3 bg-[#2d5016] text-white text-center text-base font-bold rounded-lg active:opacity-90"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      السوق
-                    </Link>
-
-                    {/* Logout */}
-                    <button
-                      onClick={openLogoutConfirmation}
-                      className="w-full px-4 py-3 mt-2 rounded-lg text-red-600 text-base font-semibold text-right active:bg-red-50"
-                    >
-                      تسجيل الخروج
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Link
-                      href="/sign-in"
-                      className="block w-full text-center px-4 py-3 text-[#2d5016] font-bold text-base border-2 border-[#2d5016]/20 rounded-lg active:bg-gray-50"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      دخول
-                    </Link>
-                    <Link
-                      href="/sign-up"
-                      className="block w-full text-center px-4 py-3 bg-[#2d5016] text-white font-bold text-base rounded-lg active:opacity-90"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      تسجيل
-                    </Link>
-                  </div>
-                )}
-              </nav>
-
-              {/* Footer */}
-              <div className="flex-shrink-0 px-5 py-3 border-t border-gray-200">
-                <p className="text-center text-xs text-gray-400">
-                  © {new Date().getFullYear()} الغلة
-                </p>
+                <button
+                  onClick={() => setShowMobileMenu(false)}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white active:bg-white/20"
+                  aria-label="إغلاق القائمة"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
             </div>
+
+            {/* Navigation Content - Scrollable */}
+            <nav className="flex-1 overflow-y-auto px-3 py-4 overscroll-contain">
+              {/* Main Navigation */}
+              <div className="space-y-1">
+                {navigationItems.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    className="flex items-center px-4 py-3.5 rounded-xl text-[#2d5016] text-base font-semibold active:bg-[#2d5016]/10 transition-colors min-h-[48px]"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="my-4 h-px bg-[#d4af37]/30" />
+
+              {loading ? (
+                <div className="flex justify-center py-6">
+                  <div className="w-6 h-6 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : user ? (
+                <div className="space-y-1">
+                  {/* User Info */}
+                  <div className="px-4 py-3 mb-3 bg-gray-50 rounded-xl">
+                    <p className="text-sm font-bold text-[#2d5016] truncate">{user?.fullName || user?.firstName || 'المستخدم'}</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+                  </div>
+
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center px-4 py-3.5 rounded-xl text-[#2d5016] text-base font-semibold active:bg-[#2d5016]/10 transition-colors min-h-[48px]"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    لوحة التحكم
+                  </Link>
+
+                  <Link
+                    href="/profile"
+                    className="flex items-center px-4 py-3.5 rounded-xl text-[#2d5016] text-base font-semibold active:bg-[#2d5016]/10 transition-colors min-h-[48px]"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    الملف الشخصي
+                  </Link>
+
+                  {/* Marketplace CTA */}
+                  <Link
+                    href="/marketplace"
+                    className="flex items-center justify-center px-4 py-3.5 mt-3 bg-[#2d5016] text-white text-base font-bold rounded-xl active:bg-[#1a3d0f] transition-colors min-h-[48px]"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    السوق
+                  </Link>
+
+                  {/* Logout */}
+                  <button
+                    onClick={openLogoutConfirmation}
+                    className="w-full flex items-center px-4 py-3.5 mt-2 rounded-xl text-red-600 text-base font-semibold active:bg-red-50 transition-colors min-h-[48px]"
+                  >
+                    تسجيل الخروج
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Link
+                    href="/sign-in"
+                    className="flex items-center justify-center w-full px-4 py-3.5 text-[#2d5016] font-bold text-base border-2 border-[#2d5016]/20 rounded-xl active:bg-gray-50 transition-colors min-h-[48px]"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    دخول
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="flex items-center justify-center w-full px-4 py-3.5 bg-[#2d5016] text-white font-bold text-base rounded-xl active:bg-[#1a3d0f] transition-colors min-h-[48px]"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    تسجيل
+                  </Link>
+                </div>
+              )}
+            </nav>
+
+            {/* Footer */}
+            <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200 bg-gray-50">
+              <p className="text-center text-xs text-gray-400">
+                © {new Date().getFullYear()} الغلة
+              </p>
+            </div>
           </div>
-        )}
-      </div>
-      
+        </div>
+      )}
+
       {/* Logout Confirmation Modal */}
       <LogoutConfirmation
         isOpen={showLogoutConfirmation}
