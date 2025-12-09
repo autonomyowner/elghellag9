@@ -13,6 +13,8 @@ async function bootstrap() {
       'http://localhost:3001',
       'http://localhost:3002',
       'http://localhost:3003',
+      'https://www.elghella.com',
+      'https://elghella.com',
     ],
     credentials: true,
   });
@@ -43,8 +45,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 4000;
-  await app.listen(port);
-  console.log(`Server running on http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`Server running on port ${port}`);
   console.log(`API Docs: http://localhost:${port}/api/docs`);
 }
 bootstrap();
