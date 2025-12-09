@@ -3,14 +3,14 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { useUser, useAuth } from '@clerk/nextjs';
+import { apiClient } from '@/lib/api/client';
 import Image from 'next/image';
 
 const NurseriesFormPage: React.FC = () => {
   const router = useRouter();
-  const { addNursery } = useSupabaseData();
-  const { user } = useSupabaseAuth();
+  const { user } = useUser();
+  const { getToken } = useAuth();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -38,7 +38,7 @@ const NurseriesFormPage: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4 text-gray-800">يجب تسجيل الدخول</h2>
           <p className="text-gray-600 mb-6">يجب عليك تسجيل الدخول لإضافة شتلات جديدة</p>
           <button
-            onClick={() => router.push('/auth/login')}
+            onClick={() => router.push('/sign-in')}
             className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-colors text-white"
           >
             تسجيل الدخول
@@ -104,8 +104,16 @@ const NurseriesFormPage: React.FC = () => {
       };
 
       console.log('Submitting nursery data:', nurseryData);
-      
-      const result = await addNursery(nurseryData);
+
+      // Get Clerk token
+      const token = await getToken();
+      if (!token) {
+        router.push('/sign-in');
+        return;
+      }
+
+      // Use API client to create nursery
+      const result = await apiClient.createNursery(token, nurseryData);
       console.log('Nursery added successfully:', result);
 
       // Show success message

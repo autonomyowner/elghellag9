@@ -3,16 +3,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase/supabaseClient';
-import { designSystem, utils, animations } from '@/lib/designSystem';
-import { useLazyLoad, PerformanceMonitor } from '@/lib/performance';
-import { 
-  MapPin, 
-  Leaf, 
-  Wrench, 
-  Truck, 
-  Ship, 
-  Satellite, 
+import { apiClient } from '@/lib/api/client';
+import { PerformanceMonitor } from '@/lib/performance';
+import {
+  MapPin,
+  Leaf,
+  Wrench,
+  Truck,
+  Ship,
+  Satellite,
   Users,
   Heart,
   Share2,
@@ -111,19 +110,10 @@ export default function MarketplacePage() {
   const loadLandSection = useCallback(async () => {
     const title = 'الأراضي الزراعية';
     try {
-      const { data, error } = await supabase
-        .from('land_listings')
-        .select('id, title, description, price, currency, listing_type, area_size, area_unit, location, water_source, images, is_available, created_at')
-        .eq('is_available', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) {
-        throw error;
-      }
+      const data = await apiClient.getLand({ limit: '5' });
 
       updateSectionState(title, {
-        items: (data ?? []).map(item => ({ ...item, type: 'land' as const })),
+        items: (Array.isArray(data) ? data : []).map((item: any) => ({ ...item, type: 'land' as const, currency: item.currency || 'دج' })),
         loading: false,
         error: null
       });
@@ -141,19 +131,10 @@ export default function MarketplacePage() {
   const loadNurserySection = useCallback(async () => {
     const title = 'الشتلات والمشاتل';
     try {
-      const { data, error } = await supabase
-        .from('nurseries')
-        .select('id, title, description, price, currency, plant_type, plant_name, age_months, size, quantity, location, images, is_available, created_at')
-        .eq('is_available', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) {
-        throw error;
-      }
+      const data = await apiClient.getNurseries({ limit: '5' });
 
       updateSectionState(title, {
-        items: (data ?? []).map(item => ({ ...item, type: 'nursery' as const })),
+        items: (Array.isArray(data) ? data : []).map((item: any) => ({ ...item, type: 'nursery' as const, currency: item.currency || 'دج' })),
         loading: false,
         error: null
       });
@@ -171,19 +152,10 @@ export default function MarketplacePage() {
   const loadEquipmentSection = useCallback(async () => {
     const title = 'المعدات الزراعية';
     try {
-      const { data, error } = await supabase
-        .from('equipment')
-        .select('id, title, description, price, currency, images, location, condition, brand, model, is_available, created_at')
-        .eq('is_available', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) {
-        throw error;
-      }
+      const data = await apiClient.getEquipment({ limit: '5' });
 
       updateSectionState(title, {
-        items: (data ?? []).map(item => ({ ...item, type: 'equipment' as const })),
+        items: (Array.isArray(data) ? data : []).map((item: any) => ({ ...item, type: 'equipment' as const, currency: item.currency || 'دج' })),
         loading: false,
         error: null
       });
@@ -201,19 +173,10 @@ export default function MarketplacePage() {
   const loadAnimalSection = useCallback(async () => {
     const title = 'الحيوانات';
     try {
-      const { data, error } = await supabase
-        .from('animal_listings')
-        .select('id, title, description, price, currency, images, location, animal_type, breed, age_months, gender, quantity, is_available, created_at')
-        .eq('is_available', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) {
-        throw error;
-      }
+      const data = await apiClient.getAnimals({ limit: '5' });
 
       updateSectionState(title, {
-        items: (data ?? []).map(item => ({ ...item, type: 'animal' as const })),
+        items: (Array.isArray(data) ? data : []).map((item: any) => ({ ...item, type: 'animal' as const, currency: item.currency || 'دج' })),
         loading: false,
         error: null
       });
@@ -231,19 +194,10 @@ export default function MarketplacePage() {
   const loadVegetableSection = useCallback(async () => {
     const title = 'الخضروات والفواكه';
     try {
-      const { data, error } = await supabase
-        .from('vegetables')
-        .select('id, title, description, price, currency, vegetable_type, variety, quantity, unit, freshness, organic, location, images, is_available, created_at')
-        .eq('is_available', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) {
-        throw error;
-      }
+      const data = await apiClient.getVegetables({ limit: '5' });
 
       updateSectionState(title, {
-        items: (data ?? []).map(item => ({ ...item, type: 'vegetable' as const })),
+        items: (Array.isArray(data) ? data : []).map((item: any) => ({ ...item, type: 'vegetable' as const, currency: item.currency || 'دج' })),
         loading: false,
         error: null
       });

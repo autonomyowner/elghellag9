@@ -6,14 +6,14 @@ import Link from 'next/link';
 import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
 import { useWebsiteSettings } from '@/lib/websiteSettings';
 import { useSearch } from '@/contexts/SearchContext';
-import { 
-  MapPin, 
-  Leaf, 
-  Wrench, 
-  Truck, 
-  Ship, 
-  Satellite, 
-  Users, 
+import {
+  MapPin,
+  Leaf,
+  Wrench,
+  Truck,
+  Ship,
+  Satellite,
+  Users,
   ArrowRight,
   Star,
   Shield,
@@ -24,7 +24,16 @@ import {
   Share2,
   CalendarCheck,
   Search,
-  ChevronDown
+  ChevronDown,
+  Carrot,
+  Tractor,
+  Wheat,
+  Sprout,
+  Globe,
+  Gift,
+  CircleDot,
+  CheckCircle,
+  Activity
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -54,7 +63,9 @@ export default function HomePage() {
         <div className="pt-20 pb-16">
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <div className="text-8xl mb-8">🚜</div>
+              <div className="mb-8 flex justify-center">
+                <Tractor className="w-24 h-24 text-white/80" strokeWidth={1} />
+              </div>
               <div className="text-5xl lg:text-7xl font-black mb-8 bg-gradient-to-r from-green-300 via-teal-300 to-green-400 bg-clip-text text-transparent">
                 الغلة
               </div>
@@ -98,7 +109,6 @@ export default function HomePage() {
       color: "bg-green-500",
       count: "150+ أرض متاحة",
       image: "/assets/land01.jpg",
-      emoji: "🌾",
       features: ["ري متطور", "تربة خصبة", "طرق ممهدة"]
     },
     {
@@ -109,7 +119,6 @@ export default function HomePage() {
       color: "bg-emerald-500",
       count: "500+ منتج",
       image: "/assets/tomato 2.jpg",
-      emoji: "🍅",
       features: ["طازج", "عضوي", "مضمون الجودة"]
     },
     {
@@ -120,7 +129,6 @@ export default function HomePage() {
       color: "bg-teal-500",
       count: "80+ مشتل",
       image: "/assets/seedings01.jpg",
-      emoji: "🌱",
       features: ["شتلات صحية", "أصناف متنوعة", "ضمان النمو"]
     },
     {
@@ -131,7 +139,6 @@ export default function HomePage() {
       color: "bg-blue-500",
       count: "200+ معدة",
       image: "/assets/machin01.jpg",
-      emoji: "🚜",
       features: ["مؤمن", "صيانة دورية", "تأجير مرن"]
     }
   ];
@@ -144,7 +151,6 @@ export default function HomePage() {
       href: "/land",
       color: "text-green-400",
       bgColor: "bg-green-500/20",
-      emoji: "🌾",
       image: "/assets/land01.jpg"
     },
     {
@@ -154,7 +160,6 @@ export default function HomePage() {
       href: "/marketplace",
       color: "text-green-400",
       bgColor: "bg-green-500/20",
-      emoji: "🍅",
       image: "/assets/tomato 2.jpg"
     },
     {
@@ -164,10 +169,8 @@ export default function HomePage() {
       href: "/experts",
       color: "text-green-400",
       bgColor: "bg-green-500/20",
-      emoji: "👨‍🌾",
       image: "/assets/pexels-cottonbro-4921204.jpg"
     },
-
     {
       title: "خدمات التصدير",
       description: "تصدير المنتجات الزراعية للخارج بأسعار منافسة ووثائق رسمية",
@@ -175,16 +178,15 @@ export default function HomePage() {
       href: "/exports",
       color: "text-green-400",
       bgColor: "bg-green-500/20",
-      emoji: "🚢",
       image: "/assets/exporting1.jpg"
     }
   ];
 
   const stats = [
-    { number: "10,000+", label: "مزارع نشط", icon: "🌾" },
-    { number: "50,000+", label: "معاملة مكتملة", icon: "✅" },
-    { number: "4.8", label: "تقييم المستخدمين", icon: "⭐" },
-    { number: "24/7", label: "دعم متواصل", icon: "🛡️" }
+    { number: "10,000+", label: "مزارع نشط" },
+    { number: "50,000+", label: "معاملة مكتملة" },
+    { number: "4.8", label: "تقييم المستخدمين" },
+    { number: "24/7", label: "دعم متواصل" }
   ];
 
   return (
@@ -317,10 +319,10 @@ export default function HomePage() {
             {/* Bubble 1 - شراء وبيع المنتجات الطازجة */}
             <Link href="/VAR/marketplace" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-green-500/30 to-green-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/25 border border-green-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🥦</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Carrot className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-green-200 group-hover:text-green-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   شراء وبيع المنتجات الطازجة
                 </h3>
               </div>
@@ -329,10 +331,10 @@ export default function HomePage() {
             {/* Bubble 2 - كراء المعدات الفلاحية */}
             <Link href="/equipment" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500/30 to-blue-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/25 border border-blue-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🚜</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Tractor className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-blue-200 group-hover:text-blue-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   بيع و كراء المعدات
                 </h3>
               </div>
@@ -341,10 +343,10 @@ export default function HomePage() {
             {/* Bubble 3 - كراء الأراضي الفلاحية */}
             <Link href="/land" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-yellow-500/30 to-yellow-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-500/25 border border-yellow-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🌾</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Wheat className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-yellow-200 group-hover:text-yellow-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   بيع و كراء الاراضي
                 </h3>
               </div>
@@ -353,10 +355,10 @@ export default function HomePage() {
             {/* Bubble 4 - اليد العاملة */}
             <Link href="/labor" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-purple-500/30 to-purple-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 border border-purple-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🧑‍🌾</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Users className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-purple-200 group-hover:text-purple-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   اليد العاملة
                 </h3>
               </div>
@@ -365,10 +367,10 @@ export default function HomePage() {
             {/* Bubble 5 - المشاتل */}
             <Link href="/nurseries" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-emerald-500/30 to-emerald-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/25 border border-emerald-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🌱</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Sprout className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-emerald-200 group-hover:text-emerald-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   المشاتل
                 </h3>
               </div>
@@ -377,10 +379,10 @@ export default function HomePage() {
             {/* Bubble 6 - خدمات التحليل والدراسات */}
             <Link href="/analysis" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-indigo-500/30 to-indigo-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/25 border border-indigo-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🛰️</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Satellite className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-indigo-200 group-hover:text-indigo-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   خدمات التحليل والدراسات
                 </h3>
               </div>
@@ -389,22 +391,22 @@ export default function HomePage() {
             {/* Bubble 7 - خدمات التصدير */}
             <Link href="/exports" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-teal-500/30 to-teal-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/25 border border-teal-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🌍</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Globe className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-teal-200 group-hover:text-teal-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   خدمات التصدير
                 </h3>
-            </div>
+              </div>
             </Link>
 
             {/* Bubble 8 - التوصيل */}
             <Link href="/delivery" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-orange-500/30 to-orange-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/25 border border-orange-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🚚</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Truck className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-orange-200 group-hover:text-orange-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   التوصيل
                 </h3>
               </div>
@@ -413,22 +415,22 @@ export default function HomePage() {
             {/* Bubble 9 - عروض خاصة */}
             <Link href="/services" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-pink-500/30 to-pink-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-pink-500/25 border border-pink-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🎁</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <Gift className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-pink-200 group-hover:text-pink-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   عروض خاصة
                 </h3>
-            </div>
+              </div>
             </Link>
 
             {/* Bubble 10 - سوق المواشي */}
             <Link href="/animals" className="group">
               <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-red-500/30 to-red-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/25 border border-red-500/40 mx-auto mb-3">
-                  <span className="text-4xl">🐄</span>
+                <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:bg-white/20 border border-white/20 mx-auto mb-3">
+                  <CircleDot className="w-10 h-10 text-white/90" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-bold text-red-200 group-hover:text-red-100 transition-colors">
+                <h3 className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
                   سوق المواشي
                 </h3>
               </div>

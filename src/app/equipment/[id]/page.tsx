@@ -4,9 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { fetchSellerInfo, Profile } from '@/lib/sellerUtils';
-import SellerInfo from '@/components/SellerInfo';
+import { apiClient } from '@/lib/api/client';
 
 interface Equipment {
   id: string;
@@ -28,6 +26,14 @@ interface Equipment {
   is_available: boolean;
   is_featured: boolean;
   view_count: number;
+  user?: {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+    phone: string | null;
+    isVerified: boolean;
+    location: string | null;
+  };
 }
 
 
@@ -35,10 +41,8 @@ interface Equipment {
 const EquipmentDetailPage: React.FC = () => {
   const params = useParams();
   const equipmentId = params.id as string;
-  const { getEquipment, isOnline, isWithinLimits } = useSupabaseData();
-  
+
   const [equipment, setEquipment] = useState<Equipment | null>(null);
-  const [seller, setSeller] = useState<Profile | null>(null);
   const [relatedEquipment, setRelatedEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,34 +59,31 @@ const EquipmentDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Use our hybrid hook to get equipment data
-      const data = await getEquipment();
-      
-      // Find the specific equipment by ID
-      const equipmentData = data.find(item => item.id === equipmentId);
-      
+      // Use the new API client to get equipment by ID
+      const equipmentData = await apiClient.getEquipmentById(equipmentId) as Equipment;
+
       if (!equipmentData) {
         setError('لم يتم العثور على الإعلان');
         return;
       }
 
-      // Use the equipment data directly since it's already in the correct format
       setEquipment(equipmentData);
 
-      // Fetch real seller data using utility function
-      const sellerData = await fetchSellerInfo(equipmentData.user_id, equipmentData.location);
-      setSeller(sellerData);
-
-      // Get related equipment (same category)
-      const relatedData = data
-        .filter(item => 
-          item.id !== equipmentId && 
-          item.category_id === equipmentData.category_id &&
-          item.is_available !== false
-        )
-        .slice(0, 4);
-
-      setRelatedEquipment(relatedData);
+      // Get related equipment (same category) from API
+      try {
+        const response = await apiClient.getEquipment({ limit: '5' }) as any;
+        const allEquipment = response.items || response || [];
+        const relatedData = allEquipment
+          .filter((item: Equipment) =>
+            item.id !== equipmentId &&
+            item.category_id === equipmentData.category_id &&
+            item.is_available !== false
+          )
+          .slice(0, 4);
+        setRelatedEquipment(relatedData);
+      } catch (relatedErr) {
+        console.error('Error fetching related equipment:', relatedErr);
+      }
 
     } catch (err: any) {
       console.error('Error fetching equipment details:', err);
@@ -317,7 +318,34 @@ const EquipmentDetailPage: React.FC = () => {
           </div>
 
           {/* Seller information */}
-          {seller && <SellerInfo seller={seller} />}
+          {equipment.user && (
+            <div className="bg-black/50 backdrop-blur-lg border border-green-500/30 rounded-xl p-6 mb-6">
+              <h3 className="text-lg font-bold text-white mb-4">معلومات البائع</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-green-900/50 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">{equipment.user.fullName}</div>
+                    {equipment.user.location && (
+                      <div className="text-sm text-gray-400">{equipment.user.location}</div>
+                    )}
+                  </div>
+                </div>
+                {equipment.user.isVerified && (
+                  <div className="flex items-center gap-2 text-green-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-semibold">حساب موثق</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-center">
             <Link

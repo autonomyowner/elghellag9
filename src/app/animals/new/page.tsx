@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { useUser, useAuth } from '@clerk/nextjs';
+import { apiClient } from '@/lib/api/client';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 const NewAnimalListingPage: React.FC = () => {
-  const { addAnimal } = useSupabaseData();
-  const { user } = useSupabaseAuth();
+  const { user } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -46,7 +46,7 @@ const NewAnimalListingPage: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4 text-gray-800">يجب تسجيل الدخول</h2>
           <p className="text-gray-600 mb-6">يجب عليك تسجيل الدخول لإضافة حيوانات جديدة</p>
           <button
-            onClick={() => router.push('/auth/login')}
+            onClick={() => router.push('/sign-in')}
             className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-colors text-white"
           >
             تسجيل الدخول
@@ -217,12 +217,17 @@ const NewAnimalListingPage: React.FC = () => {
         images: imageUrls
       };
 
-      // Add to database using the hook
-      const result = await addAnimal(listingData);
+      // Get Clerk token
+      const token = await getToken();
+      if (!token) {
+        router.push('/sign-in');
+        return;
+      }
+
+      // Add to database using API client
+      const result = await apiClient.createAnimal(token, listingData);
 
       console.log('Animal listing created successfully:', result);
-      console.log('Animal ID:', result.id);
-      console.log('Full animal data:', result);
       setSuccess(true);
       setTimeout(() => {
         router.push('/animals');

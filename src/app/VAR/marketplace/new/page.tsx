@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
-import { useSupabaseData } from '@/hooks/useSupabase';
+import { useUser, useAuth } from '@clerk/nextjs';
+import { apiClient } from '@/lib/api/client';
 
 const NewVegetableListingPage: React.FC = () => {
   const router = useRouter();
-  const { user } = useSupabaseAuth();
-  const { addVegetable } = useSupabaseData();
+  const { user } = useUser();
+  const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>([]);
@@ -108,8 +108,16 @@ const NewVegetableListingPage: React.FC = () => {
 
       console.log('Attempting to add vegetable with data:', vegetableData);
 
-      await addVegetable(vegetableData);
-      
+      // Get Clerk token
+      const token = await getToken();
+      if (!token) {
+        router.push('/sign-in');
+        return;
+      }
+
+      // Use API client to create vegetable
+      await apiClient.createVegetable(token, vegetableData);
+
       // Redirect to marketplace
       router.push('/VAR/marketplace');
       

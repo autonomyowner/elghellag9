@@ -4,14 +4,13 @@ import React, { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic';
 const MotionDiv = dynamic(() => import('framer-motion').then(mod => mod.motion.div), { ssr: false, loading: () => <div /> });
 import { AnimatePresence } from 'framer-motion';
-import { useEquipment } from '@/hooks/useSupabase'
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext'
-import { Equipment } from '@/types/database.types'
+import { useUser } from '@clerk/nextjs'
+import { apiClient } from '@/lib/api/client'
 import EquipmentCard from '@/components/equipment/EquipmentCard'
 import Link from 'next/link'
 import Image from 'next/image'
-import { 
-  Search, Filter, MapPin, DollarSign, Calendar, 
+import {
+  Search, Filter, MapPin, DollarSign, Calendar,
   Star, Grid, List, SlidersHorizontal, X,
   Tractor, Leaf, Package, TrendingUp, Plus,
   Heart, Share2, CalendarCheck, Shield, Award
@@ -201,8 +200,10 @@ const EquipmentCardEnhanced = ({ item, viewMode }: { item: any, viewMode: 'grid'
 };
 
 export default function EquipmentPage() {
-  const { equipment, loading, error, fetchEquipment } = useEquipment()
-  const { user } = useSupabaseAuth()
+  const { user } = useUser()
+  const [equipment, setEquipment] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [selectedCondition, setSelectedCondition] = useState('')
@@ -235,28 +236,37 @@ export default function EquipmentPage() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
+  // Fetch equipment function using new API
+  const fetchEquipment = useCallback(async (params?: Record<string, string>) => {
+    try {
+      const data = await apiClient.getEquipment(params)
+      return Array.isArray(data) ? data : []
+    } catch (err) {
+      console.error('Error fetching equipment:', err)
+      throw err
+    }
+  }, [])
+
   // Initial data fetch with retry logic
   useEffect(() => {
     const loadInitialData = async () => {
-      console.log('🔄 Loading initial equipment data...')
+      console.log('Loading initial equipment data...')
+      setLoading(true)
       setIsFiltering(true)
-      
+
       try {
-        // Try to fetch from Supabase first
         const data = await fetchEquipment()
-        console.log('📊 Fetched equipment data:', data?.length || 0, 'items')
-        
+        console.log('Fetched equipment data:', data?.length || 0, 'items')
+        setEquipment(data)
+
         if (data && data.length > 0) {
           setHasInitialData(true)
-          console.log('✅ Equipment data loaded successfully')
-        } else {
-          console.log('⚠️ No equipment data found, using sample data')
-          // If no data from Supabase, we'll use sample data in the render
         }
       } catch (err) {
-        console.error('❌ Error loading equipment:', err)
-        // Continue with sample data
+        console.error('Error loading equipment:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load equipment')
       } finally {
+        setLoading(false)
         setIsFiltering(false)
       }
     }
@@ -264,32 +274,34 @@ export default function EquipmentPage() {
     if (isHydrated) {
       loadInitialData()
     }
-  }, [isHydrated]) // Remove fetchEquipment from dependencies
+  }, [isHydrated, fetchEquipment])
 
   // Fetch equipment when filters change (but not on initial load)
   useEffect(() => {
-    if (!hasInitialData) return // Skip if we haven't loaded initial data yet
-    
+    if (!hasInitialData) return
+
     const loadEquipment = async () => {
       setIsFiltering(true)
       try {
-        await fetchEquipment({
-          category: selectedCategory === 'all' ? undefined : selectedCategory,
-          location: selectedLocation === 'جميع الولايات' ? undefined : selectedLocation,
-          minPrice: priceRange.min ? parseInt(priceRange.min) : undefined,
-          maxPrice: priceRange.max ? parseInt(priceRange.max) : undefined,
-          condition: selectedCondition || undefined,
-          search: debouncedSearchTerm
-        })
+        const params: Record<string, string> = {}
+        if (selectedCategory !== 'all') params.category = selectedCategory
+        if (selectedLocation !== 'جميع الولايات') params.location = selectedLocation
+        if (priceRange.min) params.minPrice = priceRange.min
+        if (priceRange.max) params.maxPrice = priceRange.max
+        if (selectedCondition) params.condition = selectedCondition
+        if (debouncedSearchTerm) params.search = debouncedSearchTerm
+
+        const data = await fetchEquipment(params)
+        setEquipment(data)
       } catch (err) {
         console.error('Error fetching equipment:', err)
       } finally {
         setIsFiltering(false)
       }
     }
-    
+
     loadEquipment()
-  }, [debouncedSearchTerm, selectedCondition, selectedCategory, selectedLocation, priceRange.min, priceRange.max, sortBy, hasInitialData])
+  }, [debouncedSearchTerm, selectedCondition, selectedCategory, selectedLocation, priceRange.min, priceRange.max, sortBy, hasInitialData, fetchEquipment])
 
   const loadMore = () => {
     setCurrentPage(prev => prev + 1)
@@ -487,7 +499,7 @@ export default function EquipmentPage() {
                 </Link>
               ) : (
                 <Link
-                  href="/auth/login"
+                  href="/sign-in"
                   className="flex items-center px-6 py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg font-semibold transition-all duration-300 hover:scale-105"
                 >
                   <Plus className="w-4 h-4 mr-2" />

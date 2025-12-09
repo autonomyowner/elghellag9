@@ -83,9 +83,6 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto">
             <div className="glass rounded-3xl p-12 shadow-2xl hover-scale animate-slide-in-right">
               <div className="text-center mb-12">
-                <div className="w-24 h-24 glass-bubble rounded-full flex items-center justify-center mx-auto mb-6 animate-float">
-                  <span className="text-4xl">🌱</span>
-                </div>
                 <h3 className="text-3xl font-bold text-white mb-6">وُلدت فكرتنا من شغفنا العميق</h3>
               </div>
               
@@ -119,9 +116,6 @@ export default function AboutPage() {
             {/* Company Description */}
             <div className="glass-dark rounded-3xl p-8 shadow-2xl hover-scale animate-slide-in-right">
               <div className="text-center mb-8">
-                <div className="w-20 h-20 glass-bubble rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
-                  <span className="text-3xl">🏢</span>
-                </div>
                 <h3 className="text-2xl font-bold text-white mb-4">شركة ناشئة متخصصة</h3>
               </div>
               
@@ -143,9 +137,6 @@ export default function AboutPage() {
             {/* Our Team */}
             <div className="glass-dark rounded-3xl p-8 shadow-2xl hover-scale animate-slide-in-right" style={{animationDelay: '0.2s'}}>
               <div className="text-center mb-8">
-                <div className="w-20 h-20 glass-bubble rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
-                  <span className="text-3xl">👥</span>
-                </div>
                 <h3 className="text-2xl font-bold text-white mb-4">فريقنا المتميز</h3>
               </div>
               
@@ -172,26 +163,20 @@ export default function AboutPage() {
           <h2 className="text-5xl font-bold text-center mb-20 gradient-text-light">قيمنا الأساسية</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {[
-              { 
-                icon: '🌱', 
-                title: 'الاستدامة', 
-                desc: 'نؤمن بالزراعة المستدامة التي تحافظ على البيئة للأجيال القادمة' 
+              {
+                title: 'الاستدامة',
+                desc: 'نؤمن بالزراعة المستدامة التي تحافظ على البيئة للأجيال القادمة'
               },
-              { 
-                icon: '🤝', 
-                title: 'الثقة', 
-                desc: 'نبني علاقات طويلة الأمد مبنية على الثقة والشفافية مع عملائنا' 
+              {
+                title: 'الثقة',
+                desc: 'نبني علاقات طويلة الأمد مبنية على الثقة والشفافية مع عملائنا'
               },
-              { 
-                icon: '💡', 
-                title: 'الابتكار', 
-                desc: 'نطور حلول مبتكرة تجمع بين التقنية الحديثة والخبرة الزراعية' 
+              {
+                title: 'الابتكار',
+                desc: 'نطور حلول مبتكرة تجمع بين التقنية الحديثة والخبرة الزراعية'
               }
             ].map((value, idx) => (
               <div key={idx} className="text-center glass rounded-3xl p-8 hover-scale animate-slide-in-right" style={{animationDelay: `${idx * 0.2}s`}}>
-                <div className="mx-auto w-20 h-20 bg-white/20 flex items-center justify-center rounded-full mb-6 animate-float">
-                  <span className="text-4xl">{value.icon}</span>
-                </div>
                 <h3 className="text-2xl font-bold mb-4 text-white">{value.title}</h3>
                 <p className="text-white/90 text-lg leading-relaxed">{value.desc}</p>
               </div>
@@ -212,9 +197,6 @@ export default function AboutPage() {
             {/* Mission */}
             <div className="glass-dark rounded-3xl p-8 shadow-2xl hover-scale animate-slide-in-right">
               <div className="text-center mb-8">
-                <div className="w-20 h-20 glass-bubble rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
-                  <span className="text-3xl">🎯</span>
-                </div>
                 <h3 className="text-2xl font-bold text-white mb-4">رسالتنا</h3>
               </div>
               
@@ -226,9 +208,6 @@ export default function AboutPage() {
             {/* Vision */}
             <div className="glass-dark rounded-3xl p-8 shadow-2xl hover-scale animate-slide-in-right" style={{animationDelay: '0.2s'}}>
               <div className="text-center mb-8">
-                <div className="w-20 h-20 glass-bubble rounded-full flex items-center justify-center mx-auto mb-4 animate-float">
-                  <span className="text-3xl">🔮</span>
-                </div>
                 <h3 className="text-2xl font-bold text-white mb-4">رؤيتنا</h3>
               </div>
               

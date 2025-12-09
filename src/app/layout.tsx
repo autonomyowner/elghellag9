@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { cookies, headers } from 'next/headers';
+import { ClerkProvider } from '@clerk/nextjs';
+import { arSA } from '@clerk/localizations';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
 import HydrationSuppressor from '@/components/HydrationSuppressor';
@@ -85,6 +87,7 @@ export default async function RootLayout({
   // This ensures the page is never statically cached
   
   return (
+    <ClerkProvider localization={arSA}>
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
@@ -141,5 +144,6 @@ export default async function RootLayout({
         </HydrationSuppressor>
       </body>
     </html>
+    </ClerkProvider>
   );
 }

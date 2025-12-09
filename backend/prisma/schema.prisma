@@ -1,0 +1,275 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User profile synced with Clerk
+model Profile {
+  id           String   @id // Clerk user ID
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  fullName     String?  @map("full_name")
+  email        String?  @unique
+  phone        String?
+  location     String?
+  avatarUrl    String?  @map("avatar_url")
+  userType     UserType @default(buyer) @map("user_type")
+  isVerified   Boolean  @default(false) @map("is_verified")
+  bio          String?
+  website      String?
+  socialLinks  Json?    @map("social_links")
+
+  // Relations
+  equipment    Equipment[]
+  landListings LandListing[]
+  animals      AnimalListing[]
+  vegetables   Vegetable[]
+  nurseries    Nursery[]
+
+  @@map("profiles")
+}
+
+enum UserType {
+  farmer
+  buyer
+  both
+}
+
+// Categories for products
+model Category {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  name        String
+  nameAr      String   @map("name_ar")
+  description String?
+  icon        String   @default("")
+  parentId    String?  @map("parent_id")
+  sortOrder   Int      @default(0) @map("sort_order")
+
+  // Self-relation for subcategories
+  parent      Category?  @relation("CategoryToSubcategory", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryToSubcategory")
+
+  // Relations
+  equipment   Equipment[]
+
+  @@map("categories")
+}
+
+// Equipment listings
+model Equipment {
+  id           String          @id @default(uuid())
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  userId       String          @map("user_id")
+  title        String
+  description  String?
+  price        Float
+  currency     String          @default("DZD")
+  categoryId   String          @map("category_id")
+  condition    EquipmentCondition @default(good)
+  year         Int?
+  brand        String?
+  model        String?
+  hoursUsed    Int?            @map("hours_used")
+  location     String
+  coordinates  Json?
+  contactPhone String?         @map("contact_phone")
+  images       String[]
+  isAvailable  Boolean         @default(true) @map("is_available")
+  isFeatured   Boolean         @default(false) @map("is_featured")
+  viewCount    Int             @default(0) @map("view_count")
+
+  // Relations
+  user         Profile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     Category        @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([location])
+  @@index([isAvailable])
+  @@map("equipment")
+}
+
+enum EquipmentCondition {
+  new
+  excellent
+  good
+  fair
+  poor
+}
+
+// Land listings
+model LandListing {
+  id           String      @id @default(uuid())
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  userId       String      @map("user_id")
+  title        String
+  description  String?
+  price        Float
+  currency     String      @default("DZD")
+  listingType  ListingType @default(sale) @map("listing_type")
+  areaSize     Float       @map("area_size")
+  areaUnit     AreaUnit    @default(hectare) @map("area_unit")
+  location     String
+  coordinates  Json?
+  contactPhone String?     @map("contact_phone")
+  waterSource  String?     @map("water_source")
+  images       String[]
+  isAvailable  Boolean     @default(true) @map("is_available")
+  isFeatured   Boolean     @default(false) @map("is_featured")
+  viewCount    Int         @default(0) @map("view_count")
+
+  // Relations
+  user         Profile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([location])
+  @@index([listingType])
+  @@index([isAvailable])
+  @@map("land_listings")
+}
+
+enum ListingType {
+  sale
+  rent
+}
+
+enum AreaUnit {
+  hectare
+  acre
+  dunum
+}
+
+// Animal listings
+model AnimalListing {
+  id                String        @id @default(uuid())
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  userId            String        @map("user_id")
+  title             String
+  description       String?
+  price             Float
+  currency          String        @default("DZD")
+  animalType        AnimalType    @map("animal_type")
+  breed             String?
+  ageMonths         Int?          @map("age_months")
+  gender            Gender        @default(male)
+  quantity          Int           @default(1)
+  healthStatus      String?       @map("health_status")
+  vaccinationStatus Boolean       @default(false) @map("vaccination_status")
+  location          String
+  coordinates       Json?
+  images            String[]
+  isAvailable       Boolean       @default(true) @map("is_available")
+  isFeatured        Boolean       @default(false) @map("is_featured")
+  viewCount         Int           @default(0) @map("view_count")
+  weightKg          Float?        @map("weight_kg")
+  pricePerHead      Boolean       @default(true) @map("price_per_head")
+  purpose           AnimalPurpose @default(meat)
+
+  // Relations
+  user              Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([animalType])
+  @@index([location])
+  @@index([isAvailable])
+  @@map("animal_listings")
+}
+
+enum AnimalType {
+  sheep
+  cow
+  goat
+  chicken
+  camel
+  horse
+  other
+}
+
+enum Gender {
+  male
+  female
+  mixed
+}
+
+enum AnimalPurpose {
+  meat
+  dairy
+  breeding
+  work
+  pets
+  other
+}
+
+// Vegetables listings
+model Vegetable {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  userId        String   @map("user_id")
+  title         String
+  description   String?
+  price         Float
+  currency      String   @default("DZD")
+  vegetableType String   @map("vegetable_type")
+  variety       String?
+  quantity      Float
+  unit          String   @default("kg")
+  freshness     String   @default("fresh")
+  organic       Boolean  @default(false)
+  location      String
+  coordinates   Json?
+  contactPhone  String?  @map("contact_phone")
+  images        String[]
+  isAvailable   Boolean  @default(true) @map("is_available")
+  isFeatured    Boolean  @default(false) @map("is_featured")
+  viewCount     Int      @default(0) @map("view_count")
+  harvestDate   DateTime? @map("harvest_date")
+  expiryDate    DateTime? @map("expiry_date")
+  certification String?
+  packaging     String   @default("bulk")
+
+  // Relations
+  user          Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([vegetableType])
+  @@index([location])
+  @@index([isAvailable])
+  @@map("vegetables")
+}
+
+// Nursery listings
+model Nursery {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  userId       String   @map("user_id")
+  title        String
+  description  String?
+  price        Float
+  currency     String   @default("DZD")
+  quantity     Int
+  location     String
+  coordinates  Json?
+  contactPhone String?  @map("contact_phone")
+  images       String[]
+  isAvailable  Boolean  @default(true) @map("is_available")
+  isFeatured   Boolean  @default(false) @map("is_featured")
+  viewCount    Int      @default(0) @map("view_count")
+
+  // Relations
+  user         Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([location])
+  @@index([isAvailable])
+  @@map("nurseries")
+}

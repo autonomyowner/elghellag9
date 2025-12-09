@@ -2,15 +2,15 @@
 
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
-import { useSupabaseData } from '@/hooks/useSupabase';
+import { useUser, useAuth } from '@clerk/nextjs';
+import { apiClient } from '@/lib/api/client';
 import Link from 'next/link';
 import Image from 'next/image';
 
 const AddLandPage: React.FC = () => {
   const router = useRouter();
-  const { user } = useSupabaseAuth();
-  const { addLand } = useSupabaseData();
+  const { user } = useUser();
+  const { getToken } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(false);
@@ -135,13 +135,20 @@ const AddLandPage: React.FC = () => {
 
       console.log('Land data prepared:', landData);
 
-      // Use the addLand function from useSupabaseData hook
-      const newLand = await addLand(landData);
+      // Get Clerk token
+      const token = await getToken();
+      if (!token) {
+        router.push('/sign-in');
+        return;
+      }
+
+      // Use API client to create land listing
+      const newLand = await apiClient.createLand(token, landData);
       console.log('Land added successfully:', newLand);
 
       // Show success message
       alert('تم إضافة الأرض بنجاح!');
-      
+
       // Redirect to land page
       router.push('/land');
       router.refresh();
@@ -162,7 +169,7 @@ const AddLandPage: React.FC = () => {
           <div className="glass-arabic p-8 text-center">
             <h1 className="text-2xl font-bold text-green-800 mb-4">يجب تسجيل الدخول</h1>
             <p className="text-green-600 mb-6">يجب تسجيل الدخول لإضافة إعلان أرض جديدة</p>
-            <Link href="/auth/login" className="btn-primary-arabic">
+            <Link href="/sign-in" className="btn-primary-arabic">
               <i className="fas fa-sign-in-alt ml-2"></i>
               تسجيل الدخول
             </Link>

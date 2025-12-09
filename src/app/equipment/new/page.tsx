@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext'
-import { useEquipment } from '@/hooks/useSupabase'
-import { supabase } from '@/lib/supabase/supabaseClient'
+import { useUser, useAuth } from '@clerk/nextjs'
+import { apiClient } from '@/lib/api/client'
 import { motion } from 'framer-motion'
 import ProgressIndicator, { ProgressStep } from '@/components/ProgressIndicator'
 import EnhancedErrorDisplay from '@/components/EnhancedErrorDisplay'
@@ -27,8 +26,8 @@ import {
 import Image from 'next/image'
 
 export default function EquipmentForm() {
-  const { user } = useSupabaseAuth()
-  const { addEquipment } = useEquipment()
+  const { user } = useUser()
+  const { getToken } = useAuth()
   const router = useRouter()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -314,20 +313,17 @@ export default function EquipmentForm() {
       setCurrentStep('publishing')
       updateStepStatus('publishing', 'active')
 
-      // Try direct Supabase insert
-      const { data, error } = await supabase
-        .from('equipment')
-        .insert([equipmentData])
-        .select()
-        .single()
-
-      if (error) {
-        console.error('🔍 Direct Supabase error:', error)
-        updateStepStatus('publishing', 'error')
-        throw error
+      // Get Clerk token
+      const token = await getToken()
+      if (!token) {
+        router.push('/sign-in')
+        return
       }
 
-      console.log('🔍 Direct Supabase success:', data)
+      // Use API client to create equipment
+      const data = await apiClient.createEquipment(token, equipmentData)
+
+      console.log('Equipment created successfully:', data)
       updateStepStatus('publishing', 'completed')
       setSuccess(true)
       

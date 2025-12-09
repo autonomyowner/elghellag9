@@ -2,21 +2,42 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { LandListing } from '@/types/database.types';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { useUser } from '@clerk/nextjs';
+import { apiClient } from '@/lib/api/client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { fetchSellerInfo, Profile } from '@/lib/sellerUtils';
-import SellerInfo from '@/components/SellerInfo';
+
+interface LandListing {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  currency: string;
+  listing_type: 'sale' | 'rent';
+  area_size: number;
+  area_unit: 'hectare' | 'acre' | 'dunum';
+  location: string;
+  images: string[];
+  is_available: boolean;
+  created_at: string;
+  contact_phone?: string;
+  water_source?: string;
+  user_id: string;
+  user?: {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+    phone: string | null;
+    isVerified: boolean;
+    location: string | null;
+  };
+}
 
 const LandDetailPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
-  const { user } = useSupabaseAuth();
-  const { getLand, isOnline, isWithinLimits } = useSupabaseData();
+  const { user } = useUser();
   const [listing, setListing] = useState<LandListing | null>(null);
-  const [seller, setSeller] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showContactInfo, setShowContactInfo] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -30,24 +51,17 @@ const LandDetailPage: React.FC = () => {
   const fetchListing = async (id: string) => {
     try {
       setLoading(true);
-      
-      // Use our hybrid hook to get land data
-      const data = await getLand();
-      
-      // Find the specific land by ID
-      const landData = data.find(item => item.id === id);
-      
+
+      // Use the new API client to get land by ID
+      const landData = await apiClient.getLandById(id) as LandListing;
+
       if (!landData) {
         console.error('Land listing not found');
         router.push('/land');
         return;
       }
 
-      setListing(landData as any);
-
-      // Fetch real seller data using utility function
-      const sellerData = await fetchSellerInfo(landData.user_id, landData.location);
-      setSeller(sellerData);
+      setListing(landData);
     } catch (error) {
       console.error('Error fetching land listing:', error);
       router.push('/land');
@@ -95,7 +109,7 @@ const LandDetailPage: React.FC = () => {
 
   const handleContactClick = () => {
     if (!user) {
-      router.push('/auth/login');
+      router.push('/sign-in');
       return;
     }
     setShowContactInfo(true);
@@ -326,7 +340,30 @@ const LandDetailPage: React.FC = () => {
             )}
 
             {/* Seller Information */}
-            {seller && <SellerInfo seller={seller} />}
+            {listing.user && (
+              <div className="glass-arabic p-8">
+                <h2 className="text-2xl font-bold text-green-800 mb-6">معلومات البائع</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-user text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                      <p className="text-green-800 font-medium">{listing.user.fullName}</p>
+                      {listing.user.isVerified && (
+                        <span className="text-xs text-green-600">حساب موثق</span>
+                      )}
+                    </div>
+                  </div>
+                  {listing.user.location && (
+                    <div className="flex items-center gap-3">
+                      <i className="fas fa-map-marker-alt text-green-600"></i>
+                      <span className="text-green-700">{listing.user.location}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

@@ -4,10 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { fetchSellerInfo, Profile } from '@/lib/sellerUtils';
-import SellerInfo from '@/components/SellerInfo';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { apiClient } from '@/lib/api/client';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
 interface Nursery {
@@ -35,17 +33,24 @@ interface Nursery {
   care_instructions: string | null;
   seasonality: 'spring' | 'summer' | 'autumn' | 'winter' | 'all_year';
   contact_phone: string | null;
+  user?: {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+    phone: string | null;
+    isVerified: boolean;
+    location: string | null;
+  };
 }
 
 const NurseryDetailPage: React.FC = () => {
   const params = useParams();
   const nurseryId = params.id as string;
-  const { getNurseries, deleteNursery, isOnline, isWithinLimits } = useSupabaseData();
-  const { user } = useSupabaseAuth();
+  const { user } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
-  
+
   const [nursery, setNursery] = useState<Nursery | null>(null);
-  const [seller, setSeller] = useState<Profile | null>(null);
   const [relatedNurseries, setRelatedNurseries] = useState<Nursery[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,34 +67,31 @@ const NurseryDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Use our hybrid hook to get nursery data
-      const data = await getNurseries();
-      
-      // Find the specific nursery by ID
-      const nurseryData = data.find(item => item.id === nurseryId);
-      
+      // Use the new API client to get nursery by ID
+      const nurseryData = await apiClient.getNurseryById(nurseryId) as Nursery;
+
       if (!nurseryData) {
         setError('لم يتم العثور على الإعلان');
         return;
       }
 
-      // Use the nursery data directly since it's already in the correct format
       setNursery(nurseryData);
 
-      // Fetch real seller data using utility function
-      const sellerData = await fetchSellerInfo(nurseryData.user_id, nurseryData.location);
-      setSeller(sellerData);
-
-      // Get related nurseries (same plant type)
-      const relatedData = data
-        .filter(item => 
-          item.id !== nurseryId && 
-          item.plant_type === nurseryData.plant_type &&
-          item.is_available !== false
-        )
-        .slice(0, 4);
-
-      setRelatedNurseries(relatedData);
+      // Get related nurseries (same plant type) from API
+      try {
+        const response = await apiClient.getNurseries({ limit: '5' }) as any;
+        const allNurseries = response.items || response || [];
+        const relatedData = allNurseries
+          .filter((item: Nursery) =>
+            item.id !== nurseryId &&
+            item.plant_type === nurseryData.plant_type &&
+            item.is_available !== false
+          )
+          .slice(0, 4);
+        setRelatedNurseries(relatedData);
+      } catch (relatedErr) {
+        console.error('Error fetching related nurseries:', relatedErr);
+      }
 
     } catch (err: any) {
       console.error('Error fetching nursery details:', err);
@@ -153,13 +155,18 @@ const NurseryDetailPage: React.FC = () => {
 
   const handleDeleteNursery = async () => {
     if (!nursery || !user) return;
-    
+
     if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟ لا يمكن التراجع عن هذا الإجراء.')) {
       return;
     }
 
     try {
-      await deleteNursery(nursery.id);
+      const token = await getToken();
+      if (!token) {
+        router.push('/sign-in');
+        return;
+      }
+      await apiClient.deleteNursery(token, nursery.id);
       alert('تم حذف الإعلان بنجاح');
       router.push('/nurseries');
     } catch (error) {
@@ -437,7 +444,34 @@ const NurseryDetailPage: React.FC = () => {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             {/* Seller Info */}
-            {seller && <SellerInfo seller={seller} />}
+            {nursery.user && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-6">
+                <h3 className="text-lg font-bold text-white mb-4">معلومات البائع</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-900/50 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white">{nursery.user.fullName}</div>
+                      {nursery.user.location && (
+                        <div className="text-sm text-gray-400">{nursery.user.location}</div>
+                      )}
+                    </div>
+                  </div>
+                  {nursery.user.isVerified && (
+                    <div className="flex items-center gap-2 text-green-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-sm font-semibold">حساب موثق</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
                          {/* Contact Actions */}
              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-6">
@@ -461,7 +495,7 @@ const NurseryDetailPage: React.FC = () => {
                </button>
 
                                {/* Delete Button for Owner */}
-                {user && nursery.user_id === user.id && (
+                {user && nursery.user_id === user?.id && (
                   <button 
                     onClick={handleDeleteNursery}
                     className="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-3 px-4 rounded-lg font-semibold transition-colors"

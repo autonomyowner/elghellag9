@@ -1,22 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { LandListing } from '@/types/database.types';
+import { useUser } from '@clerk/nextjs';
+import { apiClient } from '@/lib/api/client';
 import Link from 'next/link';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
-import { designSystem, utils } from '@/lib/designSystem';
-import { useLazyLoad, useDebounce, PerformanceMonitor } from '@/lib/performance';
-import { 
-  Search, 
-  Filter, 
-  Grid, 
-  List, 
-  MapPin, 
-  Calendar, 
-  Star, 
-  Heart, 
-  Share2, 
+import { useDebounce, PerformanceMonitor } from '@/lib/performance';
+import {
+  Search,
+  Filter,
+  Grid,
+  List,
+  MapPin,
+  Calendar,
+  Star,
+  Heart,
+  Share2,
   Plus,
   ArrowRight,
   TrendingUp,
@@ -25,8 +23,24 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
+interface LandListing {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  listing_type: 'sale' | 'rent';
+  area_size: number;
+  area_unit: 'hectare' | 'acre' | 'dunum';
+  location: string;
+  images: string[];
+  is_available: boolean;
+  created_at: string;
+  contact_phone?: string;
+}
+
 const LandListingsPage: React.FC = () => {
-  const { getLand, isOnline, isWithinLimits } = useSupabaseData();
+  const { user } = useUser();
   const [listings, setListings] = useState<LandListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,7 +57,6 @@ const LandListingsPage: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isHydrated, setIsHydrated] = useState(false);
-  const { user } = useSupabaseAuth();
 
   const ITEMS_PER_PAGE = 12;
 
@@ -65,7 +78,7 @@ const LandListingsPage: React.FC = () => {
     setCurrentPage(1); // Reset to first page when searching
   }, [debouncedSearch]);
 
-  // Memoized fetch function
+  // Memoized fetch function using new API
   const fetchListings = useCallback(async (page = 1, reset = false) => {
     try {
       setError(null);
@@ -74,45 +87,47 @@ const LandListingsPage: React.FC = () => {
         setCurrentPage(1);
       }
 
-      // Use our hybrid hook to get land data
-      const filters = {
-        listing_type: filterType === 'all' ? undefined : filterType,
-        location: undefined,
-        minPrice: minPrice ? parseFloat(minPrice) : undefined,
-        maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
-        minArea: minArea ? parseFloat(minArea) : undefined,
-        maxArea: maxArea ? parseFloat(maxArea) : undefined
-      };
-      
-      const data = await getLand(filters);
-      console.log('Fetched land data:', data);
-      console.log('Sample land record:', data[0]);
-      console.log('Contact phone fields:', data.map(item => ({ id: item.id, contact_phone: item.contact_phone })));
-      
-      // Apply search filter after fetch
-      let landData = data;
-      if (debouncedSearchTerm) {
-        const term = debouncedSearchTerm.toLowerCase();
-        landData = landData.filter(listing =>
-          (listing.title && listing.title.toLowerCase().includes(term)) ||
-          (listing.description && listing.description.toLowerCase().includes(term)) ||
-          (listing.location && listing.location.toLowerCase().includes(term))
-        );
-      }
+      // Build query params for API
+      const params: Record<string, string> = {};
+      if (filterType !== 'all') params.listingType = filterType;
+      if (minPrice) params.minPrice = minPrice;
+      if (maxPrice) params.maxPrice = maxPrice;
+      if (debouncedSearchTerm) params.search = debouncedSearchTerm;
 
-      // Apply additional filters
-      landData = landData.filter(listing => {
-        if (listing.is_available === false) return false;
-        
+      const data = await apiClient.getLand(params);
+      let landData = Array.isArray(data) ? data : [];
+      console.log('Fetched land data:', landData.length, 'items');
+
+      // Apply additional client-side filters
+      landData = landData.filter((listing: any) => {
+        if (listing.isAvailable === false) return false;
+
         // Area filters
-        if (minArea && listing.area_size < parseFloat(minArea)) return false;
-        if (maxArea && listing.area_size > parseFloat(maxArea)) return false;
-        
+        if (minArea && listing.areaSize < parseFloat(minArea)) return false;
+        if (maxArea && listing.areaSize > parseFloat(maxArea)) return false;
+
         return true;
       });
 
+      // Map API response to expected format
+      landData = landData.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        price: item.price,
+        currency: item.currency || 'دج',
+        listing_type: item.listingType || 'sale',
+        area_size: item.areaSize || 0,
+        area_unit: item.areaUnit || 'hectare',
+        location: item.location,
+        images: item.images || [],
+        is_available: item.isAvailable !== false,
+        created_at: item.createdAt,
+        contact_phone: item.contactPhone
+      }));
+
       // Apply sorting
-      landData.sort((a, b) => {
+      landData.sort((a: LandListing, b: LandListing) => {
         switch (sortBy) {
           case 'newest':
             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -143,7 +158,7 @@ const LandListingsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [filterType, debouncedSearchTerm, minPrice, maxPrice, minArea, maxArea, sortBy, getLand]);
+  }, [filterType, debouncedSearchTerm, minPrice, maxPrice, minArea, maxArea, sortBy]);
 
   // Initial load
   useEffect(() => {
@@ -254,14 +269,6 @@ const LandListingsPage: React.FC = () => {
             اكتشف أفضل الأراضي الزراعية للبيع والإيجار في جميع أنحاء الجزائر
           </p>
 
-          {/* Status Indicator */}
-          {(!isOnline || !isWithinLimits) && (
-            <div className="inline-flex items-center px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-full text-yellow-300 text-sm mb-8">
-              <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
-              {!isOnline ? 'وضع عدم الاتصال' : 'استخدام التخزين المحلي'}
-            </div>
-          )}
-          
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-8">
             <div className="relative">

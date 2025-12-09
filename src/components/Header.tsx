@@ -3,14 +3,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { useUser, useClerk } from '@clerk/nextjs';
 import LogoutConfirmation from './LogoutConfirmation';
 import UnifiedSearch from './UnifiedSearch';
-import { 
-  Leaf, 
-  Menu, 
-  X, 
-  User, 
+import {
+  Leaf,
+  Menu,
+  X,
+  User,
   LogOut,
   Plus,
   MapPin,
@@ -28,7 +28,9 @@ const Header: React.FC = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
-  const { user, profile, signOut, loading } = useSupabaseAuth();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const loading = !isLoaded;
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
   // Scroll handling
@@ -59,7 +61,7 @@ const Header: React.FC = () => {
   const handleSignOut = async () => {
     setLogoutLoading(true);
     try {
-      await signOut();
+      await signOut({ redirectUrl: '/' });
       setShowMobileMenu(false);
       setShowUserDropdown(false);
       setShowLogoutConfirmation(false);
@@ -170,7 +172,7 @@ const Header: React.FC = () => {
                     }`}
                   >
                     <User className="w-4 h-4 mr-2" />
-                    {profile?.full_name || 'حسابي'}
+                    {user?.fullName || user?.firstName || 'حسابي'}
                     <ChevronDown className={`w-4 h-4 mr-2 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`} />
                   </button>
                   
@@ -178,8 +180,8 @@ const Header: React.FC = () => {
                   {showUserDropdown && (
                     <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                       <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">{profile?.full_name || 'المستخدم'}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
+                        <p className="text-sm font-medium text-gray-900">{user?.fullName || user?.firstName || 'المستخدم'}</p>
+                        <p className="text-xs text-gray-500">{user?.primaryEmailAddress?.emailAddress}</p>
                       </div>
                       
                       <Link
@@ -224,21 +226,21 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-3 space-x-reverse">
-                <Link 
-                  href="/auth/login"
+                <Link
+                  href="/sign-in"
                   className={`px-4 py-2 font-medium transition-colors duration-300 hover:scale-105 ${
-                    isScrolled 
-                      ? 'text-green-700 hover:text-green-800' 
+                    isScrolled
+                      ? 'text-green-700 hover:text-green-800'
                       : 'text-white/90 hover:text-white drop-shadow-md'
                   }`}
                 >
                   دخول
                 </Link>
-                <Link 
-                  href="/auth/signup"
+                <Link
+                  href="/sign-up"
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 ${
-                    isScrolled 
-                      ? 'bg-green-600 text-white hover:bg-green-700' 
+                    isScrolled
+                      ? 'bg-green-600 text-white hover:bg-green-700'
                       : 'bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30'
                   }`}
                 >
@@ -293,8 +295,8 @@ const Header: React.FC = () => {
                   <div className="border-t border-green-200 pt-3 space-y-3">
                     {/* User Info */}
                     <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm font-medium text-gray-900">{profile?.full_name || 'المستخدم'}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
+                      <p className="text-sm font-medium text-gray-900">{user?.fullName || user?.firstName || 'المستخدم'}</p>
+                      <p className="text-xs text-gray-500">{user?.primaryEmailAddress?.emailAddress}</p>
                     </div>
                     
                     <Link 
@@ -334,15 +336,15 @@ const Header: React.FC = () => {
                   </div>
                 ) : (
                   <div className="border-t border-green-200 pt-3 space-y-3">
-                    <Link 
-                      href="/auth/login"
+                    <Link
+                      href="/sign-in"
                       className="block w-full text-center px-4 py-3 text-green-700 hover:bg-green-50 rounded-lg transition-colors font-medium"
                       onClick={() => setShowMobileMenu(false)}
                     >
                       دخول
                     </Link>
-                    <Link 
-                      href="/auth/signup"
+                    <Link
+                      href="/sign-up"
                       className="block w-full text-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                       onClick={() => setShowMobileMenu(false)}
                     >

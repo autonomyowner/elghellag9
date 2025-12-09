@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { apiClient } from '@/lib/api/client';
+import { useUser, useAuth } from '@clerk/nextjs';
 
 interface VegetableListing {
   id: string;
@@ -32,14 +32,22 @@ interface VegetableListing {
   expiry_date: string | null;
   certification: string | null;
   packaging: 'loose' | 'packaged' | 'bulk';
+  user?: {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+    phone: string | null;
+    isVerified: boolean;
+    location: string | null;
+  };
 }
 
 const VegetableDetailPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
-  const { getVegetables, updateVegetable, deleteVegetable } = useSupabaseData();
-  const { user } = useSupabaseAuth();
-  
+  const { user } = useUser();
+  const { getToken } = useAuth();
+
   const [vegetable, setVegetable] = useState<VegetableListing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,19 +60,11 @@ const VegetableDetailPage: React.FC = () => {
     const fetchVegetable = async () => {
       try {
         setLoading(true);
-        const vegetables = await getVegetables();
-        const foundVegetable = vegetables.find((v: VegetableListing) => v.id === vegetableId);
-        
-        if (foundVegetable) {
-          setVegetable(foundVegetable);
-          
-          // Increment view count - handle this separately to avoid blocking the page load
-          try {
-            await updateVegetable(vegetableId, { view_count: (foundVegetable.view_count || 0) + 1 });
-          } catch (viewCountError) {
-            console.warn('Failed to update view count:', viewCountError);
-            // Don't show this error to the user as it's not critical
-          }
+        // Use the new API client to get vegetable by ID
+        const vegetableData = await apiClient.getVegetableById(vegetableId) as VegetableListing;
+
+        if (vegetableData) {
+          setVegetable(vegetableData);
         } else {
           setError('الخضار غير موجودة');
         }
@@ -79,11 +79,16 @@ const VegetableDetailPage: React.FC = () => {
     if (vegetableId) {
       fetchVegetable();
     }
-  }, [vegetableId, getVegetables, updateVegetable]);
+  }, [vegetableId]);
 
   const handleDelete = async () => {
     try {
-      await deleteVegetable(vegetableId);
+      const token = await getToken();
+      if (!token) {
+        router.push('/sign-in');
+        return;
+      }
+      await apiClient.deleteVegetable(token, vegetableId);
       router.push('/VAR/marketplace');
     } catch (error: unknown) {
       console.error('Error deleting vegetable:', error);
@@ -193,6 +198,9 @@ const VegetableDetailPage: React.FC = () => {
   }
 
   const isOwner = user && user.id === vegetable.user_id;
+
+  // Get seller info from embedded user object
+  const seller = vegetable.user;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-20">

@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSupabaseData } from '@/hooks/useSupabase';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
+import { apiClient } from '@/lib/api/client';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
 interface AnimalListing {
@@ -33,27 +33,24 @@ interface AnimalListing {
   weight_kg: number | null;
   price_per_head: boolean;
   purpose: 'meat' | 'dairy' | 'breeding' | 'work' | 'pets' | 'other';
-}
-
-interface Profile {
-  id: string;
-  full_name: string | null;
-  phone: string | null;
-  location: string | null;
-  avatar_url: string | null;
-  user_type: 'farmer' | 'buyer' | 'both';
-  is_verified: boolean;
+  user?: {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+    phone: string | null;
+    isVerified: boolean;
+    location: string | null;
+  };
 }
 
 const AnimalDetailPage: React.FC = () => {
   const params = useParams();
   const animalId = params.id as string;
-  const { getAnimals, deleteAnimal, isOnline, isWithinLimits } = useSupabaseData();
-  const { user } = useSupabaseAuth();
+  const { user } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
-  
+
   const [animal, setAnimal] = useState<AnimalListing | null>(null);
-  const [seller, setSeller] = useState<Profile | null>(null);
   const [relatedAnimals, setRelatedAnimals] = useState<AnimalListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,42 +67,31 @@ const AnimalDetailPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Use our hybrid hook to get animal data
-      const data = await getAnimals();
-      
-      // Find the specific animal by ID
-      const animalData = data.find(item => item.id === animalId);
-      
+      // Use the new API client to get animal by ID
+      const animalData = await apiClient.getAnimalById(animalId) as AnimalListing;
+
       if (!animalData) {
         setError('لم يتم العثور على الإعلان');
         return;
       }
 
-      // Use the animal data directly since it's already in the correct format
       setAnimal(animalData);
 
-      // Mock seller data for now
-      const mockSeller: Profile = {
-        id: animalData.user_id,
-        full_name: 'مزارع موثوق',
-        phone: '+213 123 456 789',
-        location: animalData.location || 'الجزائر',
-        avatar_url: null,
-        user_type: 'farmer',
-        is_verified: true
-      };
-      setSeller(mockSeller);
-
-      // Get related animals (same type)
-      const relatedData = data
-        .filter(item => 
-          item.id !== animalId && 
-          item.animal_type === animalData.animal_type &&
-          item.is_available !== false
-        )
-        .slice(0, 4);
-
-      setRelatedAnimals(relatedData);
+      // Get related animals (same type) from API
+      try {
+        const response = await apiClient.getAnimals({ limit: '5' }) as any;
+        const allAnimals = response.items || response || [];
+        const relatedData = allAnimals
+          .filter((item: AnimalListing) =>
+            item.id !== animalId &&
+            item.animal_type === animalData.animal_type &&
+            item.is_available !== false
+          )
+          .slice(0, 4);
+        setRelatedAnimals(relatedData);
+      } catch (relatedErr) {
+        console.error('Error fetching related animals:', relatedErr);
+      }
 
     } catch (err: any) {
       console.error('Error fetching animal details:', err);
@@ -182,24 +168,23 @@ const AnimalDetailPage: React.FC = () => {
 
   const handleDeleteAnimal = async () => {
     if (!animal || !user) return;
-    
+
     if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟ لا يمكن التراجع عن هذا الإجراء.')) {
       return;
     }
 
     try {
-      const result = await deleteAnimal(animal.id);
-      
-      if (!result.success) {
-        alert('حدث خطأ أثناء حذف الإعلان');
-        console.error('Error deleting animal:', result);
-      } else {
-        alert('تم حذف الإعلان بنجاح');
-        router.push('/animals');
+      const token = await getToken();
+      if (!token) {
+        router.push('/sign-in');
+        return;
       }
+      await apiClient.deleteAnimal(token, animal.id);
+      alert('تم حذف الإعلان بنجاح');
+      router.push('/animals');
     } catch (error) {
       console.error('Error deleting animal:', error);
-      alert('حدث خطأ غير متوقع');
+      alert('حدث خطأ أثناء حذف الإعلان');
     }
   };
 
@@ -247,16 +232,6 @@ const AnimalDetailPage: React.FC = () => {
             <li className="text-gray-800">{animal.title}</li>
           </ol>
         </nav>
-
-        {/* Status Indicator */}
-        {(!isOnline || !isWithinLimits) && (
-          <div className="mb-6 p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-yellow-700">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-              {!isOnline ? 'وضع عدم الاتصال' : 'استخدام التخزين المحلي'}
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -411,7 +386,7 @@ const AnimalDetailPage: React.FC = () => {
               </div>
 
               {/* Delete Button for Owner */}
-              {user && animal.user_id === user.id && (
+              {user && animal.user_id === user?.id && (
                 <div className="mt-4">
                   <button 
                     onClick={handleDeleteAnimal}
@@ -472,7 +447,7 @@ const AnimalDetailPage: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Seller Information */}
-            {seller && (
+            {animal.user && (
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">معلومات البائع</h3>
                 <div className="space-y-3">
@@ -483,26 +458,21 @@ const AnimalDetailPage: React.FC = () => {
                       </svg>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-800">{seller.full_name}</div>
-                      <div className="text-sm text-gray-500">{seller.location}</div>
+                      <div className="font-semibold text-gray-800">{animal.user.fullName}</div>
+                      {animal.user.location && (
+                        <div className="text-sm text-gray-500">{animal.user.location}</div>
+                      )}
                     </div>
                   </div>
-                  {seller.phone && (
+                  {animal.user.phone && (
                     <div className="flex items-center gap-2 text-gray-600">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
-                      {seller.phone}
+                      {animal.user.phone}
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">نوع المستخدم:</span>
-                    <span className="text-sm font-semibold text-orange-600">
-                      {seller.user_type === 'farmer' ? 'مزارع' : 
-                       seller.user_type === 'buyer' ? 'مشتري' : 'مزارع ومشتري'}
-                    </span>
-                  </div>
-                  {seller.is_verified && (
+                  {animal.user.isVerified && (
                     <div className="flex items-center gap-2 text-green-600">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
