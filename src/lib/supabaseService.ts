@@ -387,25 +387,18 @@ export const fileService = {
 
 // Statistics Service
 export const statsService = {
-  // Get user statistics
+  // Get user statistics - parallelized for performance
   async getUserStats(userId: string) {
-    // Get equipment count and views
-    const { data: equipment } = await supabase
-      .from('equipment')
-      .select('view_count')
-      .eq('user_id', userId)
+    // Run all queries in parallel instead of sequentially
+    const [equipmentResult, landResult, favoritesResult] = await Promise.all([
+      supabase.from('equipment').select('view_count').eq('user_id', userId),
+      supabase.from('land_listings').select('view_count').eq('user_id', userId),
+      supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('user_id', userId)
+    ])
 
-    // Get land listings count and views
-    const { data: landListings } = await supabase
-      .from('land_listings')
-      .select('view_count')
-      .eq('user_id', userId)
-
-    // Get favorites count
-    const { count: favoritesCount } = await supabase
-      .from('favorites')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
+    const equipment = equipmentResult.data
+    const landListings = landResult.data
+    const favoritesCount = favoritesResult.count
 
     const totalViews = (equipment || []).reduce((sum, item) => sum + (item.view_count || 0), 0) +
                       (landListings || []).reduce((sum, item) => sum + (item.view_count || 0), 0)

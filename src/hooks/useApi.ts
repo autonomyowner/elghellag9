@@ -9,6 +9,7 @@ export function useEquipment(params?: Record<string, string>) {
   return useQuery({
     queryKey: ['equipment', params],
     queryFn: () => apiClient.getEquipment(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -17,6 +18,7 @@ export function useEquipmentById(id: string) {
     queryKey: ['equipment', id],
     queryFn: () => apiClient.getEquipmentById(id),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -24,6 +26,7 @@ export function useFeaturedEquipment(limit?: number) {
   return useQuery({
     queryKey: ['equipment', 'featured', limit],
     queryFn: () => apiClient.getFeaturedEquipment(limit),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -92,6 +95,7 @@ export function useLand(params?: Record<string, string>) {
   return useQuery({
     queryKey: ['land', params],
     queryFn: () => apiClient.getLand(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -100,6 +104,7 @@ export function useLandById(id: string) {
     queryKey: ['land', id],
     queryFn: () => apiClient.getLandById(id),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -107,6 +112,7 @@ export function useFeaturedLand(limit?: number) {
   return useQuery({
     queryKey: ['land', 'featured', limit],
     queryFn: () => apiClient.getFeaturedLand(limit),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -175,6 +181,7 @@ export function useAnimals(params?: Record<string, string>) {
   return useQuery({
     queryKey: ['animals', params],
     queryFn: () => apiClient.getAnimals(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -183,6 +190,7 @@ export function useAnimalById(id: string) {
     queryKey: ['animals', id],
     queryFn: () => apiClient.getAnimalById(id),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -190,6 +198,7 @@ export function useFeaturedAnimals(limit?: number) {
   return useQuery({
     queryKey: ['animals', 'featured', limit],
     queryFn: () => apiClient.getFeaturedAnimals(limit),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -214,6 +223,7 @@ export function useVegetables(params?: Record<string, string>) {
   return useQuery({
     queryKey: ['vegetables', params],
     queryFn: () => apiClient.getVegetables(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -222,6 +232,7 @@ export function useVegetableById(id: string) {
     queryKey: ['vegetables', id],
     queryFn: () => apiClient.getVegetableById(id),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -229,6 +240,7 @@ export function useFeaturedVegetables(limit?: number) {
   return useQuery({
     queryKey: ['vegetables', 'featured', limit],
     queryFn: () => apiClient.getFeaturedVegetables(limit),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -237,6 +249,7 @@ export function useNurseries(params?: Record<string, string>) {
   return useQuery({
     queryKey: ['nurseries', params],
     queryFn: () => apiClient.getNurseries(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -245,6 +258,7 @@ export function useNurseryById(id: string) {
     queryKey: ['nurseries', id],
     queryFn: () => apiClient.getNurseryById(id),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 
@@ -252,6 +266,7 @@ export function useFeaturedNurseries(limit?: number) {
   return useQuery({
     queryKey: ['nurseries', 'featured', limit],
     queryFn: () => apiClient.getFeaturedNurseries(limit),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 }
 

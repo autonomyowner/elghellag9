@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { cookies, headers } from 'next/headers';
 import { ClerkProvider } from '@clerk/nextjs';
 import { arSA } from '@clerk/localizations';
 import './globals.css';
@@ -10,9 +9,7 @@ import MobileOptimizedInterface from '@/components/MobileOptimizedInterface';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// Force dynamic rendering - never statically cache this layout
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Allow static optimization and caching - removed force-dynamic for performance
 
 export const metadata: Metadata = {
   title: 'الغلة - سوق المزارعين الإلكتروني',
@@ -70,22 +67,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Read cookies and headers to ensure dynamic rendering
-  // This forces Next.js to render on every request
-  const cookieStore = await cookies();
-  const headersList = await headers();
-  // Read cookies and headers - accessing these marks the route as dynamic
-  const allCookies = cookieStore.getAll();
-  // Access user-agent or any header to ensure dynamic rendering
-  const userAgent = headersList.get('user-agent') || headersList.get('x-vercel-id');
-  // Force dynamic by reading request headers/cookies
-  // This ensures the page is never statically cached
-  
   return (
     <ClerkProvider localization={arSA}>
     <html lang="ar" dir="rtl" suppressHydrationWarning>
