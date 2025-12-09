@@ -2,24 +2,15 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useWebsiteSettings } from '@/lib/websiteSettings';
 import ContactForm from '@/components/ContactForm';
-import Link from 'next/link';
+
+const contactInfo = {
+  email: 'contact@elghella.com',
+  address: 'الجزائر',
+  phones: ['0558981686', '0798700447', '0660378697']
+};
 
 export default function ContactPage() {
-  const { settings, loading } = useWebsiteSettings();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-900 to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-green-200 font-semibold">جاري التحميل...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 to-gray-900">
       {/* Hero Section */}
@@ -37,21 +28,6 @@ export default function ContactPage() {
 
           {/* Contact Information */}
           <div className="space-y-6">
-            {/* Contact Content */}
-            {settings.contact_content && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-white/10 rounded-2xl shadow-lg p-6 border border-green-500/20"
-              >
-                <div className="prose prose-green max-w-none text-right text-green-100">
-                  <p className="text-lg leading-relaxed">
-                    {settings.contact_content}
-                  </p>
-                </div>
-              </motion.div>
-            )}
-
             {/* Contact Information */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -60,51 +36,46 @@ export default function ContactPage() {
               className="bg-white/10 rounded-2xl shadow-lg p-6 border border-green-500/20"
             >
               <h2 className="text-xl font-bold text-green-200 mb-6 flex items-center">
-                <i className="fas fa-phone text-green-400 ml-3"></i>
                 معلومات الاتصال
               </h2>
               <div className="space-y-4">
-                {settings.contact_email && (
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                      <i className="fas fa-envelope text-green-300"></i>
-                    </div>
-                    <div>
-                      <p className="text-sm text-green-100">البريد الإلكتروني</p>
-                      <a 
-                        href={`mailto:${settings.contact_email}`}
-                        className="text-green-200 hover:text-green-300 font-semibold"
-                      >
-                        {settings.contact_email}
-                      </a>
-                    </div>
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
                   </div>
-                )}
-                
+                  <div>
+                    <p className="text-sm text-green-100">البريد الإلكتروني</p>
+                    <a
+                      href={`mailto:${contactInfo.email}`}
+                      className="text-green-200 hover:text-green-300 font-semibold"
+                    >
+                      {contactInfo.email}
+                    </a>
+                  </div>
+                </div>
+
                 {/* Phone Numbers */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3 space-x-reverse">
                     <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                      <i className="fas fa-phone text-green-300"></i>
                     </div>
                     <div>
                       <p className="text-sm text-green-100">أرقام الهاتف</p>
                       <div className="space-y-1">
-                        <a 
+                        <a
                           href="tel:0558981686"
                           className="text-green-200 hover:text-green-300 font-semibold block"
                           dir="ltr"
                         >
                           05 58981686
                         </a>
-                        <a 
+                        <a
                           href="tel:0798700447"
                           className="text-green-200 hover:text-green-300 font-semibold block"
                           dir="ltr"
                         >
                           07 98700447
                         </a>
-                        <a 
+                        <a
                           href="tel:0660378697"
                           className="text-green-200 hover:text-green-300 font-semibold block"
                           dir="ltr"
@@ -115,18 +86,15 @@ export default function ContactPage() {
                     </div>
                   </div>
                 </div>
-                
-                {settings.address && (
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                      <i className="fas fa-map-marker-alt text-green-300"></i>
-                    </div>
-                    <div>
-                      <p className="text-sm text-green-100">العنوان</p>
-                      <p className="text-green-200 font-semibold">{settings.address}</p>
-                    </div>
+
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm text-green-100">العنوان</p>
+                    <p className="text-green-200 font-semibold">{contactInfo.address}</p>
+                  </div>
+                </div>
               </div>
             </motion.div>
 

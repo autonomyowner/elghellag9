@@ -1,11 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWebsiteSettings } from '@/lib/websiteSettings';
 import Link from 'next/link';
 
+const siteSettings = {
+  site_title: 'الغلة',
+  site_description: 'منصة متكاملة للمزارعين لبيع وشراء المنتجات الزراعية، المعدات، الأراضي، والخدمات الاستشارية',
+  contact_email: 'contact@elghella.com',
+  address: 'الجزائر'
+};
+
 export default function Footer() {
-  const { settings } = useWebsiteSettings();
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -59,19 +64,19 @@ export default function Footer() {
                 <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-emerald-400">{settings.site_title}</h3>
+                <h3 className="text-2xl font-bold text-emerald-400">{siteSettings.site_title}</h3>
                 <p className="text-sm text-gray-400">منصة المزارعين</p>
               </div>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              {settings.site_description}
+              {siteSettings.site_description}
             </p>
-            
+
             {/* Newsletter Subscription */}
             <div className="mb-6">
               <h4 className="text-lg font-semibold mb-3 text-emerald-400">اشترك في النشرة الإخبارية</h4>
               <p className="text-sm text-gray-400 mb-4">احصل على آخر الأخبار والنصائح الزراعية</p>
-              
+
               <form onSubmit={handleNewsletterSubmit} className="space-y-3">
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
@@ -105,18 +110,18 @@ export default function Footer() {
                   )}
                 </button>
               </form>
-              
+
               {message && (
                 <div className={`mt-3 p-3 rounded-lg text-sm ${
-                  messageType === 'success' 
-                    ? 'bg-green-500/20 border border-green-500/30 text-green-400' 
+                  messageType === 'success'
+                    ? 'bg-green-500/20 border border-green-500/30 text-green-400'
                     : 'bg-red-500/20 border border-red-500/30 text-red-400'
                 }`}>
                   {message}
                 </div>
               )}
             </div>
-            
+
             {/* Social Media Links */}
             <div className="flex space-x-4 space-x-reverse">
               {/* Facebook */}
@@ -129,7 +134,7 @@ export default function Footer() {
               >
                 <i className="fab fa-facebook-f text-white text-lg group-hover:text-white"></i>
               </a>
-              
+
               {/* Instagram */}
               <a
                 href="https://www.instagram.com/el_ghella_/?fbclid=IwY2xjawLwqzJleHRuA2FlbQIxMABicmlkETF1V0htdkVhRVNhcG9hb1YzAR6JtdV_SYKFKbWZi-eAC56MfdAcEwok-_hDSctq9tRuEhCBPYW1s0HPl-F6ig_aem_Akct20fqf2UrxE9Mf1EoiQ"
@@ -140,7 +145,7 @@ export default function Footer() {
               >
                 <i className="fab fa-instagram text-white text-lg group-hover:text-white"></i>
               </a>
-              
+
               {/* TikTok */}
               <a
                 href="https://www.tiktok.com/@elghella10?_t=ZN-8yKMuFB1wIA&_r=1&fbclid=IwY2xjawLwqy5leHRuA2FlbQIxMABicmlkETF1V0htdkVhRVNhcG9hb1YzAR6jZLxUf1XjQseM-gHEzbPOsMaV0wH7ZLTgJu-Wter5Kxs0aKEnUr9In9w5fg_aem_BdvgT-Mkmob_c0Rp62-dGg"
@@ -151,42 +156,6 @@ export default function Footer() {
               >
                 <i className="fab fa-tiktok text-white text-lg group-hover:text-white"></i>
               </a>
-              
-              {settings.social_twitter && (
-                <a
-                  href={settings.social_twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group w-12 h-12 bg-blue-400 hover:bg-blue-500 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
-                  title="تابعنا على Twitter"
-                >
-                  <i className="fab fa-twitter text-white text-lg group-hover:text-white"></i>
-                </a>
-              )}
-              
-              {settings.social_linkedin && (
-                <a
-                  href={settings.social_linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group w-12 h-12 bg-blue-700 hover:bg-blue-800 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
-                  title="تابعنا على LinkedIn"
-                >
-                  <i className="fab fa-linkedin-in text-white text-lg group-hover:text-white"></i>
-                </a>
-              )}
-              
-              {settings.social_youtube && (
-                <a
-                  href={settings.social_youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
-                  title="تابعنا على YouTube"
-                >
-                  <i className="fab fa-youtube text-white text-lg group-hover:text-white"></i>
-                </a>
-              )}
             </div>
           </div>
 
@@ -226,23 +195,19 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-emerald-400">معلومات الاتصال</h4>
             <div className="space-y-3">
-              {settings.contact_email && (
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <i className="fas fa-envelope text-emerald-400"></i>
-                  <a 
-                    href={`mailto:${settings.contact_email}`}
-                    className="text-gray-300 hover:text-emerald-400 transition-colors"
-                  >
-                    {settings.contact_email}
-                  </a>
-                </div>
-              )}
-              
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <a
+                  href={`mailto:${siteSettings.contact_email}`}
+                  className="text-gray-300 hover:text-emerald-400 transition-colors"
+                >
+                  {siteSettings.contact_email}
+                </a>
+              </div>
+
               {/* Phone Numbers */}
               <div className="space-y-2">
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <i className="fas fa-phone text-emerald-400"></i>
-                  <a 
+                  <a
                     href="tel:0558981686"
                     className="text-gray-300 hover:text-emerald-400 transition-colors"
                   >
@@ -250,8 +215,7 @@ export default function Footer() {
                   </a>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <i className="fas fa-phone text-emerald-400"></i>
-                  <a 
+                  <a
                     href="tel:0798700447"
                     className="text-gray-300 hover:text-emerald-400 transition-colors"
                   >
@@ -259,8 +223,7 @@ export default function Footer() {
                   </a>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <i className="fas fa-phone text-emerald-400"></i>
-                  <a 
+                  <a
                     href="tel:0660378697"
                     className="text-gray-300 hover:text-emerald-400 transition-colors"
                   >
@@ -268,13 +231,10 @@ export default function Footer() {
                   </a>
                 </div>
               </div>
-              
-              {settings.address && (
-                <div className="flex items-start space-x-2 space-x-reverse">
-                  <i className="fas fa-map-marker-alt text-emerald-400 mt-1"></i>
-                  <span className="text-gray-300">{settings.address}</span>
-                </div>
-              )}
+
+              <div className="flex items-start space-x-2 space-x-reverse">
+                <span className="text-gray-300">{siteSettings.address}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -282,7 +242,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400">
-            © {new Date().getFullYear()} {settings.site_title}. جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} {siteSettings.site_title}. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>
