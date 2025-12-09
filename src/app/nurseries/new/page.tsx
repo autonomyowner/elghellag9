@@ -90,6 +90,20 @@ export default function NewNurseryPage() {
       const token = await getToken();
       if (!token) throw new Error('يرجى تسجيل الدخول أولاً');
 
+      // Upload images to R2
+      let imageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        setUploadingImages(true);
+        try {
+          const uploadResult = await apiClient.uploadFiles(token, imageFiles, 'nurseries');
+          imageUrls = uploadResult.urls || [];
+        } catch (uploadErr) {
+          console.error('Image upload failed:', uploadErr);
+        } finally {
+          setUploadingImages(false);
+        }
+      }
+
       const nurseryData = {
         title: formData.title,
         description: formData.description || null,
@@ -99,7 +113,7 @@ export default function NewNurseryPage() {
         quantity: parseInt(formData.quantity),
         location: formData.location,
         contact_phone: formData.contact_phone || null,
-        images: images,
+        images: imageUrls,
         is_available: true,
         is_featured: false,
       };

@@ -94,6 +94,20 @@ export default function NewLandPage() {
       const token = await getToken();
       if (!token) throw new Error('يرجى تسجيل الدخول أولاً');
 
+      // Upload images to R2
+      let imageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        setUploadingImages(true);
+        try {
+          const uploadResult = await apiClient.uploadFiles(token, imageFiles, 'land');
+          imageUrls = uploadResult.urls || [];
+        } catch (uploadErr) {
+          console.error('Image upload failed:', uploadErr);
+        } finally {
+          setUploadingImages(false);
+        }
+      }
+
       const landData = {
         title: formData.title,
         description: formData.description || null,
@@ -105,7 +119,7 @@ export default function NewLandPage() {
         location: formData.location,
         contact_phone: formData.contact_phone || null,
         water_source: formData.water_source || null,
-        images: images,
+        images: imageUrls,
         is_available: true,
         is_featured: false,
       };

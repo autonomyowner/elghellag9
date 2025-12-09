@@ -75,7 +75,7 @@ const NewVegetableListingPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       setError('يجب تسجيل الدخول لإضافة خضار');
       return;
@@ -85,6 +85,27 @@ const NewVegetableListingPage: React.FC = () => {
     setError(null);
 
     try {
+      // Get Clerk token
+      const token = await getToken();
+      if (!token) {
+        router.push('/sign-in');
+        return;
+      }
+
+      // Upload images to R2
+      let imageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        setUploadingImages(true);
+        try {
+          const uploadResult = await apiClient.uploadFiles(token, imageFiles, 'vegetables');
+          imageUrls = uploadResult.urls || [];
+        } catch (uploadErr) {
+          console.error('Image upload failed:', uploadErr);
+        } finally {
+          setUploadingImages(false);
+        }
+      }
+
       const vegetableData = {
         user_id: user.id,
         title: formData.title,
@@ -96,7 +117,7 @@ const NewVegetableListingPage: React.FC = () => {
         location: formData.location,
         harvest_date: formData.harvest_date || new Date().toISOString().split('T')[0],
         contact_phone: formData.contact_phone,
-        images: images,
+        images: imageUrls,
         is_available: true,
         is_featured: false,
         view_count: 0,
@@ -105,13 +126,6 @@ const NewVegetableListingPage: React.FC = () => {
       };
 
       console.log('Attempting to add vegetable with data:', vegetableData);
-
-      // Get Clerk token
-      const token = await getToken();
-      if (!token) {
-        router.push('/sign-in');
-        return;
-      }
 
       // Use API client to create vegetable
       await apiClient.createVegetable(token, vegetableData);

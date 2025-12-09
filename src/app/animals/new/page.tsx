@@ -115,12 +115,26 @@ export default function NewAnimalPage() {
         throw new Error('يرجى ملء جميع الحقول المطلوبة');
       }
 
-      if (images.length === 0) {
+      if (imageFiles.length === 0) {
         throw new Error('يجب رفع صورة واحدة على الأقل');
       }
 
       const token = await getToken();
       if (!token) throw new Error('يرجى تسجيل الدخول أولاً');
+
+      // Upload images to R2
+      let imageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        setUploadingImages(true);
+        try {
+          const uploadResult = await apiClient.uploadFiles(token, imageFiles, 'animals');
+          imageUrls = uploadResult.urls || [];
+        } catch (uploadErr) {
+          console.error('Image upload failed:', uploadErr);
+        } finally {
+          setUploadingImages(false);
+        }
+      }
 
       const animalData = {
         title: formData.title,
@@ -138,7 +152,7 @@ export default function NewAnimalPage() {
         weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
         price_per_head: formData.price_per_head,
         purpose: formData.purpose,
-        images: images,
+        images: imageUrls,
         is_available: true,
         is_featured: false,
       };
