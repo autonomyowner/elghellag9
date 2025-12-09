@@ -272,6 +272,18 @@ img[loading="lazy"] {
   }
 }
 
+/* Mobile Menu Slide In Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .animate-slide-in-right {
   animation: slideInRight 0.8s ease-out forwards;
   opacity: 0;

@@ -270,92 +270,168 @@ const Header: React.FC = () => {
           <UnifiedSearch variant="header" />
         </div>
 
-        {/* Mobile Menu */}
-        {showMobileMenu && (
-          <div className="md:hidden pb-6">
-            <div className="bg-white border border-green-200 rounded-lg p-4 mt-4">
-                          <nav className="space-y-3">
-              {navigationItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className="flex items-center space-x-3 space-x-reverse px-4 py-3 text-green-700 hover:bg-green-50 rounded-lg transition-colors"
-                  onClick={() => setShowMobileMenu(false)}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              ))}
+        {/* Mobile Menu - Full Screen Drawer */}
+        <div
+          className={`md:hidden fixed inset-0 z-50 transition-all duration-500 ${
+            showMobileMenu ? 'visible' : 'invisible pointer-events-none'
+          }`}
+        >
+          {/* Backdrop */}
+          <div
+            className={`absolute inset-0 bg-gradient-to-l from-black/60 via-black/40 to-transparent backdrop-blur-sm transition-opacity duration-500 ${
+              showMobileMenu ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={() => setShowMobileMenu(false)}
+          />
 
-                {loading ? (
-                  <div className="flex justify-center py-2">
-                    <div className="w-4 h-4 border border-green-500 border-t-transparent rounded-full animate-spin opacity-50"></div>
+          {/* Drawer Panel */}
+          <div
+            className={`absolute top-0 right-0 h-full w-[85%] max-w-[320px] bg-gradient-to-b from-[#f5f3f0] via-white to-[#f5f3f0] shadow-2xl transition-transform duration-500 ease-out ${
+              showMobileMenu ? 'translate-x-0' : 'translate-x-full'
+            }`}
+          >
+            {/* Golden Accent Line */}
+            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-[#d4af37] via-[#ffd700] to-[#d4af37]" />
+
+            {/* Header */}
+            <div className="relative px-6 pt-6 pb-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f]">
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm text-white/90 hover:bg-white/20 transition-all duration-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mt-2">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-lg">
+                  <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">الغلة</h2>
+                  <p className="text-sm text-white/70">منصة المزارعين</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Content */}
+            <nav className="px-4 py-6 overflow-y-auto h-[calc(100%-180px)]">
+              {/* Main Navigation */}
+              <div className="space-y-1">
+                {navigationItems.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    className={`flex items-center gap-4 px-4 py-4 rounded-xl text-[#2d5016] hover:bg-[#2d5016]/5 active:bg-[#2d5016]/10 transition-all duration-300 ${
+                      showMobileMenu ? 'animate-[slideIn_0.4s_ease-out_forwards]' : ''
+                    }`}
+                    style={{
+                      animationDelay: `${index * 0.08}s`,
+                      opacity: showMobileMenu ? undefined : 0
+                    }}
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <span className="text-lg font-semibold">{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="my-5 h-px bg-gradient-to-l from-transparent via-[#d4af37]/30 to-transparent" />
+
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-8 h-8 border-3 border-[#d4af37] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : user ? (
+                <div className="space-y-1">
+                  {/* User Info Card */}
+                  <div
+                    className={`px-4 py-4 mb-4 bg-gradient-to-l from-[#2d5016]/5 to-transparent rounded-xl border border-[#2d5016]/10 ${
+                      showMobileMenu ? 'animate-[slideIn_0.4s_ease-out_forwards]' : ''
+                    }`}
+                    style={{ animationDelay: '0.32s', opacity: showMobileMenu ? undefined : 0 }}
+                  >
+                    <p className="text-base font-bold text-[#2d5016]">{user?.fullName || user?.firstName || 'المستخدم'}</p>
+                    <p className="text-sm text-[#2d5016]/60 mt-0.5">{user?.primaryEmailAddress?.emailAddress}</p>
                   </div>
-                ) : user ? (
-                  <div className="border-t border-green-200 pt-3 space-y-3">
-                    {/* User Info */}
-                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm font-medium text-gray-900">{user?.fullName || user?.firstName || 'المستخدم'}</p>
-                      <p className="text-xs text-gray-500">{user?.primaryEmailAddress?.emailAddress}</p>
-                    </div>
-                    
-                    <Link 
-                      href="/dashboard"
-                      className="flex items-center space-x-3 space-x-reverse px-4 py-3 text-green-700 hover:bg-green-50 rounded-lg transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      <LayoutDashboard className="w-5 h-5" />
-                      <span className="font-medium">لوحة التحكم</span>
-                    </Link>
-                    
-                    <Link 
-                      href="/profile"
-                      className="flex items-center space-x-3 space-x-reverse px-4 py-3 text-green-700 hover:bg-green-50 rounded-lg transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      <User className="w-5 h-5" />
-                      <span className="font-medium">الملف الشخصي</span>
-                    </Link>
-                    
-                    <Link 
-                      href="/marketplace"
-                      className="flex items-center space-x-3 space-x-reverse px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      <Store className="w-5 h-5" />
-                      <span className="font-medium">السوق</span>
-                    </Link>
-                    
-                    <button 
-                      onClick={openLogoutConfirmation}
-                      className="w-full flex items-center space-x-3 space-x-reverse px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <LogOut className="w-5 h-5" />
-                      <span className="font-medium">تسجيل الخروج</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="border-t border-green-200 pt-3 space-y-3">
-                    <Link
-                      href="/sign-in"
-                      className="block w-full text-center px-4 py-3 text-green-700 hover:bg-green-50 rounded-lg transition-colors font-medium"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      دخول
-                    </Link>
-                    <Link
-                      href="/sign-up"
-                      className="block w-full text-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      تسجيل
-                    </Link>
-                  </div>
-                )}
-              </nav>
+
+                  <Link
+                    href="/dashboard"
+                    className={`flex items-center gap-4 px-4 py-4 rounded-xl text-[#2d5016] hover:bg-[#2d5016]/5 active:bg-[#2d5016]/10 transition-all duration-300 ${
+                      showMobileMenu ? 'animate-[slideIn_0.4s_ease-out_forwards]' : ''
+                    }`}
+                    style={{ animationDelay: '0.40s', opacity: showMobileMenu ? undefined : 0 }}
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <span className="text-lg font-semibold">لوحة التحكم</span>
+                  </Link>
+
+                  <Link
+                    href="/profile"
+                    className={`flex items-center gap-4 px-4 py-4 rounded-xl text-[#2d5016] hover:bg-[#2d5016]/5 active:bg-[#2d5016]/10 transition-all duration-300 ${
+                      showMobileMenu ? 'animate-[slideIn_0.4s_ease-out_forwards]' : ''
+                    }`}
+                    style={{ animationDelay: '0.48s', opacity: showMobileMenu ? undefined : 0 }}
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <span className="text-lg font-semibold">الملف الشخصي</span>
+                  </Link>
+
+                  {/* Marketplace CTA */}
+                  <Link
+                    href="/marketplace"
+                    className={`flex items-center justify-center gap-3 px-4 py-4 mt-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f] text-white rounded-xl shadow-lg shadow-[#2d5016]/20 hover:shadow-xl hover:shadow-[#2d5016]/30 active:scale-[0.98] transition-all duration-300 ${
+                      showMobileMenu ? 'animate-[slideIn_0.4s_ease-out_forwards]' : ''
+                    }`}
+                    style={{ animationDelay: '0.56s', opacity: showMobileMenu ? undefined : 0 }}
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <span className="text-lg font-bold">السوق</span>
+                  </Link>
+
+                  {/* Logout */}
+                  <button
+                    onClick={openLogoutConfirmation}
+                    className={`w-full flex items-center gap-4 px-4 py-4 mt-4 rounded-xl text-red-600 hover:bg-red-50 active:bg-red-100 transition-all duration-300 ${
+                      showMobileMenu ? 'animate-[slideIn_0.4s_ease-out_forwards]' : ''
+                    }`}
+                    style={{ animationDelay: '0.64s', opacity: showMobileMenu ? undefined : 0 }}
+                  >
+                    <span className="text-lg font-semibold">تسجيل الخروج</span>
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className={`space-y-3 ${showMobileMenu ? 'animate-[slideIn_0.4s_ease-out_forwards]' : ''}`}
+                  style={{ animationDelay: '0.32s', opacity: showMobileMenu ? undefined : 0 }}
+                >
+                  <Link
+                    href="/sign-in"
+                    className="block w-full text-center px-4 py-4 text-[#2d5016] font-bold text-lg border-2 border-[#2d5016]/20 rounded-xl hover:border-[#2d5016]/40 hover:bg-[#2d5016]/5 active:bg-[#2d5016]/10 transition-all duration-300"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    دخول
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="block w-full text-center px-4 py-4 bg-gradient-to-l from-[#2d5016] to-[#1a3d0f] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#2d5016]/20 hover:shadow-xl hover:shadow-[#2d5016]/30 active:scale-[0.98] transition-all duration-300"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    تسجيل
+                  </Link>
+                </div>
+              )}
+            </nav>
+
+            {/* Footer */}
+            <div className="absolute bottom-0 left-0 right-0 px-6 py-4 bg-gradient-to-t from-[#f5f3f0] to-transparent">
+              <div className="h-px bg-gradient-to-l from-transparent via-[#d4af37]/20 to-transparent mb-4" />
+              <p className="text-center text-sm text-[#2d5016]/40 font-medium">
+                © {new Date().getFullYear()} الغلة
+              </p>
             </div>
           </div>
-        )}
+        </div>
       </div>
       
       {/* Logout Confirmation Modal */}
