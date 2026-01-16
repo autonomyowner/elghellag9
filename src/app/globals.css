@@ -349,8 +349,8 @@ img[loading="lazy"] {
   ) !important;
   backdrop-filter: blur(20px) !important;
   border-bottom: 3px solid #d4af37 !important;
-  box-shadow: 
-    0 10px 30px rgba(45, 80, 22, 0.2) !important,
+  box-shadow:
+    0 10px 30px rgba(45, 80, 22, 0.2),
     0 5px 15px rgba(212, 175, 55, 0.3) !important;
   position: relative;
   transform: translateZ(0) !important;
@@ -366,9 +366,9 @@ img[loading="lazy"] {
   backdrop-filter: blur(40px) saturate(200%) !important;
   border-bottom: 2px solid rgba(212, 175, 55, 0.3) !important;
   border-top: 1px solid rgba(255, 215, 0, 0.2) !important;
-  box-shadow: 
-    0 0 30px rgba(255, 215, 0, 0.3) !important,
-    0 10px 40px rgba(45, 80, 22, 0.2) !important,
+  box-shadow:
+    0 0 30px rgba(255, 215, 0, 0.3),
+    0 10px 40px rgba(45, 80, 22, 0.2),
     0 5px 20px rgba(212, 175, 55, 0.3) !important;
   position: relative;
   transform: translateZ(0) !important;
