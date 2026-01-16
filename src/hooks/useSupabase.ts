@@ -6,6 +6,86 @@ import { Equipment, LandListing, Category, Profile } from '@/types/database.type
 import { supabase } from '@/lib/supabase/supabaseClient'
 import { withInsertTimeout, createProgressTracker } from '@/lib/supabase/timeoutWrapper'
 
+// MAINTENANCE MODE - Set to true to use mock data instead of Supabase
+const MAINTENANCE_MODE = true;
+
+// Mock data for maintenance mode
+const mockEquipment: Equipment[] = [
+  {
+    id: 'mock-1',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    user_id: 'mock-user',
+    title: 'جرار زراعي حديث',
+    description: 'جرار زراعي بحالة ممتازة، قوة 85 حصان، مناسب لجميع الأعمال الزراعية',
+    price: 2500000,
+    category_id: 'tractors',
+    condition: 'excellent',
+    location: 'الجزائر العاصمة',
+    brand: 'John Deere',
+    model: '5085M',
+    year: 2022,
+    images: [],
+    is_available: true,
+    view_count: 45,
+  } as Equipment,
+  {
+    id: 'mock-2',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    user_id: 'mock-user',
+    title: 'حصادة قمح متطورة',
+    description: 'حصادة قمح بتقنية حديثة، عرض القطع 6 متر',
+    price: 8500000,
+    category_id: 'harvesters',
+    condition: 'good',
+    location: 'سطيف',
+    brand: 'CLAAS',
+    model: 'LEXION 750',
+    year: 2021,
+    images: [],
+    is_available: true,
+    view_count: 32,
+  } as Equipment,
+  {
+    id: 'mock-3',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    user_id: 'mock-user',
+    title: 'محراث قلاب',
+    description: 'محراث قلاب 4 أسلحة، مناسب للتربة الصلبة',
+    price: 350000,
+    category_id: 'plows',
+    condition: 'excellent',
+    location: 'تيارت',
+    brand: 'Lemken',
+    model: 'EurOpal 7',
+    year: 2023,
+    images: [],
+    is_available: true,
+    view_count: 18,
+  } as Equipment,
+];
+
+const mockLandListings: LandListing[] = [
+  {
+    id: 'land-1',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    user_id: 'mock-user',
+    title: 'أرض زراعية خصبة',
+    description: 'أرض زراعية 10 هكتار، مسقية، صالحة لجميع الزراعات',
+    price: 15000000,
+    location: 'البليدة',
+    area: 10,
+    soil_type: 'طينية خصبة',
+    water_source: 'بئر ارتوازي',
+    images: [],
+    is_available: true,
+    view_count: 67,
+  } as unknown as LandListing,
+];
+
 // Hook for user profile management
 export function useProfile() {
   const { user, profile, updateProfile } = useSupabaseAuth()
@@ -44,11 +124,11 @@ export function useProfile() {
 // Hook for equipment management with Supabase
 export function useEquipment() {
   const { user } = useSupabaseAuth();
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>(MAINTENANCE_MODE ? mockEquipment : []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastFetchParams, setLastFetchParams] = useState<string>('');
-  const [hasInitialized, setHasInitialized] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(MAINTENANCE_MODE);
 
   const fetchEquipment = useCallback(async (filters?: {
     category?: string;
@@ -58,12 +138,19 @@ export function useEquipment() {
     condition?: string;
     search?: string;
   }) => {
+    // MAINTENANCE MODE - Return mock data
+    if (MAINTENANCE_MODE) {
+      console.log('🔧 Maintenance mode - returning mock equipment data');
+      setEquipment(mockEquipment);
+      return mockEquipment;
+    }
+
     try {
       // Create a cache key for the current filters
       const cacheKey = JSON.stringify(filters || {});
-      
-      console.log('🔄 fetchEquipment called with:', { 
-        loading, 
+
+      console.log('🔄 fetchEquipment called with:', {
+        loading,
         currentEquipmentCount: equipment.length,
         filters: filters || 'none',
         user: user?.id,
@@ -551,6 +638,10 @@ export function useSupabaseData() {
 
   // Generic CRUD operations
   const createRecord = useCallback(async (table: string, data: any) => {
+    // MAINTENANCE MODE - Return error
+    if (MAINTENANCE_MODE) {
+      throw new Error('الخدمة قيد الصيانة - Service under maintenance');
+    }
     if (!user) throw new Error('User must be logged in');
     
     const progressTracker = createProgressTracker(`Creating ${table} record`);
@@ -607,6 +698,10 @@ export function useSupabaseData() {
   }, [user]);
 
   const updateRecord = useCallback(async (table: string, id: string, updates: any) => {
+    // MAINTENANCE MODE - Return error
+    if (MAINTENANCE_MODE) {
+      throw new Error('الخدمة قيد الصيانة - Service under maintenance');
+    }
     if (!user) throw new Error('User must be logged in');
     
     try {
@@ -640,6 +735,10 @@ export function useSupabaseData() {
   }, [user]);
 
   const deleteRecord = useCallback(async (table: string, id: string) => {
+    // MAINTENANCE MODE - Return error
+    if (MAINTENANCE_MODE) {
+      throw new Error('الخدمة قيد الصيانة - Service under maintenance');
+    }
     if (!user) throw new Error('User must be logged in');
     
     try {
@@ -668,6 +767,12 @@ export function useSupabaseData() {
   }, [user]);
 
   const fetchRecords = useCallback(async (table: string, filters?: any) => {
+    // MAINTENANCE MODE - Return empty array
+    if (MAINTENANCE_MODE) {
+      console.log(`🔧 Maintenance mode - returning empty data for ${table}`);
+      return [];
+    }
+
     try {
       let query = supabase
         .from(table)

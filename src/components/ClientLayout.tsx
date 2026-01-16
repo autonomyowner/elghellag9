@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import BrowserCache from '@/lib/browserCache';
 import CLSOptimizer from '@/components/CLSOptimizer';
@@ -11,9 +11,6 @@ const ConditionalHeader = dynamic(() => import("@/components/ConditionalHeader")
   ssr: false,
   loading: () => <div className="h-16 bg-black/20 animate-pulse" />
 });
-
-import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
-import { SearchProvider } from "@/contexts/SearchContext";
 
 const ServiceWorkerRegistration = dynamic(() => import("@/components/ServiceWorkerRegistration"), {
   ssr: false
@@ -54,18 +51,16 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <SupabaseAuthProvider>
-      <SearchProvider>
-        <PerformanceOptimizer />
-        <CLSOptimizer />
-        <AggressiveCLSPrevention />
-        <ConditionalHeader />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <ServiceWorkerRegistration />
-      </SearchProvider>
-    </SupabaseAuthProvider>
+    <>
+      <PerformanceOptimizer />
+      <CLSOptimizer />
+      <AggressiveCLSPrevention />
+      <ConditionalHeader />
+      <main className="min-h-screen">
+        {children}
+      </main>
+      <ServiceWorkerRegistration />
+    </>
   );
 };
 

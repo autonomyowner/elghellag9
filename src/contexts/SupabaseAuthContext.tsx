@@ -380,10 +380,26 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   )
 }
 
+// Default values for when auth is not available (maintenance mode)
+const defaultAuthContext: AuthContextType = {
+  user: null,
+  session: null,
+  profile: null,
+  loading: false,
+  signIn: async () => ({ error: { message: 'الخدمة قيد الصيانة' } }),
+  signUp: async () => ({ error: { message: 'الخدمة قيد الصيانة' } }),
+  signInWithGoogle: async () => ({ error: { message: 'الخدمة قيد الصيانة' } }),
+  signInWithFacebook: async () => ({ error: { message: 'الخدمة قيد الصيانة' } }),
+  signOut: async () => {},
+  updateProfile: async () => ({ error: { message: 'الخدمة قيد الصيانة' } }),
+  uploadAvatar: async () => ({ error: { message: 'الخدمة قيد الصيانة' } }),
+}
+
 export function useSupabaseAuth() {
   const context = useContext(AuthContext)
+  // Return default context instead of throwing error (maintenance mode)
   if (context === undefined) {
-    throw new Error('useSupabaseAuth must be used within a SupabaseAuthProvider')
+    return defaultAuthContext
   }
   return context
 }

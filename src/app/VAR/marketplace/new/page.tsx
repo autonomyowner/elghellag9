@@ -1,389 +1,141 @@
-"use client";
+'use client'
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
-import { useSupabaseData } from '@/hooks/useSupabase';
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { ArrowLeft, Leaf, Construction, Clock } from 'lucide-react'
 
-const NewVegetableListingPage: React.FC = () => {
-  const router = useRouter();
-  const { user } = useSupabaseAuth();
-  const { addVegetable } = useSupabaseData();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [images, setImages] = useState<string[]>([]);
-
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    vegetable_type: 'tomatoes',
-    price: '',
-    quantity: '',
-    unit: 'kg',
-    location: '',
-    harvest_date: '',
-    contact_phone: ''
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({
-        ...prev,
-        [name]: checked
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const newImages: string[] = [];
-    
-    Array.from(files).forEach(file => {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('حجم الصورة يجب أن يكون أقل من 5 ميجابايت');
-        return;
-      }
-      
-      convertImageToBase64(file).then(base64 => {
-        newImages.push(base64);
-        setImages(prev => [...prev, ...newImages]);
-      });
-    });
-  };
-
-  const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const convertImageToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) {
-      setError('يجب تسجيل الدخول لإضافة خضار');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const vegetableData = {
-        user_id: user.id,
-        title: formData.title,
-        description: formData.description,
-        vegetable_type: formData.vegetable_type,
-        price: parseFloat(formData.price),
-        quantity: parseInt(formData.quantity) || 0,
-        unit: formData.unit,
-        location: formData.location,
-        harvest_date: formData.harvest_date || new Date().toISOString().split('T')[0],
-        contact_phone: formData.contact_phone,
-        images: images,
-        is_available: true,
-        is_featured: false,
-        view_count: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('Attempting to add vegetable with data:', vegetableData);
-
-      await addVegetable(vegetableData);
-      
-      // Redirect to marketplace
-      router.push('/VAR/marketplace');
-      
-    } catch (error: unknown) {
-      console.error('Error adding vegetable:', error);
-      
-      // Better error handling
-      let errorMessage = 'حدث خطأ في إضافة الخضار. يرجى المحاولة مرة أخرى.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('RLS')) {
-          errorMessage = 'خطأ في الصلاحيات. يرجى التأكد من تسجيل الدخول.';
-        } else if (error.message.includes('duplicate')) {
-          errorMessage = 'هذا الإعلان موجود بالفعل.';
-        } else if (error.message.includes('invalid')) {
-          errorMessage = 'بيانات غير صحيحة. يرجى التحقق من المعلومات المدخلة.';
-        } else {
-          errorMessage = `خطأ: ${error.message}`;
-        }
-      }
-      
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+export default function NewVegetableListingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-20">
-      <div className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto"
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="text-6xl mb-4">🥬</div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">إضافة خضار جديدة</h1>
-            <p className="text-gray-600">أضف خضارك الطازجة إلى السوق واجعلها متاحة للمشترين</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 relative overflow-hidden" dir="rtl">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-green-500/10"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(29,231,130,0.1),transparent_50%)]"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(16,185,129,0.1),transparent_50%)]"></div>
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-emerald-400/20 rounded-full"
+            initial={{
+              x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+              y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000),
+              opacity: 0
+            }}
+            animate={{
+              y: [null, -100, -200],
+              opacity: [0, 0.5, 0],
+            }}
+            transition={{
+              duration: Math.random() * 3 + 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Navigation */}
+      <nav className="relative z-10 p-6">
+        <div className="flex items-center justify-between">
+          <Link href="/VAR/marketplace" className="flex items-center gap-2 text-white hover:text-emerald-400 transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+            <span>العودة للسوق</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <motion.div
+              whileHover={{ rotate: 5, scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Leaf className="w-8 h-8 text-emerald-400" />
+            </motion.div>
+            <span className="text-2xl font-bold text-white">الغلة</span>
           </div>
+        </div>
+      </nav>
 
-          {/* Form */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    عنوان الإعلان *
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="مثال: طماطم طازجة عضوية"
-                    required
-                  />
-                </div>
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    نوع الخضار *
-                  </label>
-                  <select
-                    name="vegetable_type"
-                    value={formData.vegetable_type}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="tomatoes">طماطم</option>
-                    <option value="potatoes">بطاطس</option>
-                    <option value="onions">بصل</option>
-                    <option value="carrots">جزر</option>
-                    <option value="cucumbers">خيار</option>
-                    <option value="peppers">فلفل</option>
-                    <option value="lettuce">خس</option>
-                    <option value="cabbage">ملفوف</option>
-                    <option value="broccoli">بروكلي</option>
-                    <option value="cauliflower">قرنبيط</option>
-                    <option value="spinach">سبانخ</option>
-                    <option value="other">أخرى</option>
-                  </select>
-                </div>
+          {/* Under Construction Message */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="w-full max-w-lg mx-auto text-center"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20 shadow-2xl"
+            >
+              {/* Construction Icon */}
+              <motion.div
+                animate={{
+                  rotate: [0, -10, 10, -10, 0],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 1
+                }}
+                className="w-24 h-24 mx-auto mb-8 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center"
+              >
+                <Construction className="w-12 h-12 text-amber-400" />
+              </motion.div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    السعر (دج) *
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="مثال: 150"
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الكمية *
-                    </label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={formData.quantity}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="مثال: 50"
-                      min="0"
-                      step="1"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      الوحدة
-                    </label>
-                    <select
-                      name="unit"
-                      value={formData.unit}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    >
-                      <option value="kg">كيلوغرام</option>
-                      <option value="ton">طن</option>
-                      <option value="piece">قطعة</option>
-                      <option value="bundle">حزمة</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    الموقع *
-                  </label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="مثال: الجزائر العاصمة"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    تاريخ الحصاد
-                  </label>
-                  <input
-                    type="date"
-                    name="harvest_date"
-                    value={formData.harvest_date}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
+              {/* Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-3xl font-bold text-white mb-4"
+              >
+                إضافة إعلان قريباً
+              </motion.h1>
 
               {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  الوصف
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="وصف مفصل للخضار - Detailed description of the vegetables"
-                />
-              </div>
+              <motion.p
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-xl text-gray-300 mb-8"
+              >
+                نعمل على تجهيز نظام إضافة الإعلانات. سنعود قريباً بميزات جديدة.
+              </motion.p>
 
+              {/* Coming Soon Badge */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 }}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-emerald-300"
+              >
+                <Clock className="w-5 h-5" />
+                <span className="font-medium">قريباً</span>
+              </motion.div>
 
-
-              {/* Contact Information */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  رقم الهاتف
-                </label>
-                <input
-                  type="tel"
-                  name="contact_phone"
-                  value={formData.contact_phone}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="مثال: 0770123456"
-                />
-              </div>
-
-              {/* Images */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  صور الخضار
-                </label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-                <p className="text-sm text-gray-500 mt-1">يمكنك رفع عدة صور (حد أقصى 5 ميجابايت لكل صورة)</p>
-              </div>
-
-              {/* Image Preview */}
-              {images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {images.map((image, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={image}
-                        alt={`صورة ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
-                        style={{ aspectRatio: '1/1' }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-600">{error}</p>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center space-x-2 space-x-reverse"
-                  style={{ minHeight: '48px' }}
+              {/* Back Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="mt-8"
+              >
+                <Link
+                  href="/VAR/marketplace"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl hover:from-emerald-600 hover:to-green-600 font-bold text-lg transition-all"
                 >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>جاري الإضافة...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>إضافة الخضار</span>
-                      <span>🥬</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </motion.div>
+                  <span>تصفح السوق</span>
+                  <ArrowLeft className="w-5 h-5" />
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
-  );
-};
-
-export default NewVegetableListingPage; 
+  )
+}
