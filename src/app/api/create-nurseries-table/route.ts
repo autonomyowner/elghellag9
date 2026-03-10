@@ -1,8 +1,0 @@
-import { NextResponse } from 'next/server';
-
-export async function POST() {
-  return NextResponse.json({
-    success: false,
-    error: 'الخدمة قيد الصيانة - Service under maintenance'
-  }, { status: 503 });
-}

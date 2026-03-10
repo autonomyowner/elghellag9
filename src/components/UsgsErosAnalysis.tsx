@@ -88,7 +88,7 @@ const UsgsErosAnalysis: React.FC<UsgsErosAnalysisProps> = ({ usgsData }) => {
       case 'good': return 'text-green-500';
       case 'fair': return 'text-yellow-500';
       case 'poor': return 'text-red-500';
-      default: return 'text-gray-500';
+      default: return 'text-gray-400';
     }
   };
 
@@ -96,7 +96,7 @@ const UsgsErosAnalysis: React.FC<UsgsErosAnalysisProps> = ({ usgsData }) => {
     switch (trend) {
       case 'increasing': return <TrendingUp className="w-4 h-4 text-green-500" />;
       case 'decreasing': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <Minus className="w-4 h-4 text-gray-500" />;
+      default: return <Minus className="w-4 h-4 text-gray-400" />;
     }
   };
 
@@ -121,9 +121,9 @@ const UsgsErosAnalysis: React.FC<UsgsErosAnalysisProps> = ({ usgsData }) => {
   return (
     <div className="space-y-6">
       {/* Simplified USGS EROS Analysis */}
-      <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+      <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-white/20">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <Satellite className="w-5 h-5 text-blue-500" />
             تحليل لاندسات
           </h3>
@@ -131,39 +131,39 @@ const UsgsErosAnalysis: React.FC<UsgsErosAnalysisProps> = ({ usgsData }) => {
 
         {/* Simple Data Display */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+          <div className="p-4 bg-green-500/20 rounded-xl border border-green-500/30">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-400">
                 {safeData.analysis.ndvi.current.toFixed(3)}
               </div>
-              <div className="text-sm text-gray-600">NDVI</div>
+              <div className="text-sm text-gray-300">NDVI</div>
             </div>
           </div>
 
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="p-4 bg-blue-500/20 rounded-xl border border-blue-500/30">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-400">
                 {safeData.analysis.soilMoisture.level.toFixed(0)}%
               </div>
-              <div className="text-sm text-gray-600">رطوبة التربة</div>
+              <div className="text-sm text-gray-300">رطوبة التربة</div>
             </div>
           </div>
 
-          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="p-4 bg-purple-500/20 rounded-xl border border-purple-500/30">
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-purple-400">
                 {safeData.analysis.landUse.confidence * 100}%
               </div>
-              <div className="text-sm text-gray-600">مستوى الثقة</div>
+              <div className="text-sm text-gray-300">مستوى الثقة</div>
             </div>
           </div>
 
-          <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+          <div className="p-4 bg-orange-500/20 rounded-xl border border-orange-500/30">
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-orange-400">
                 {safeData.metadata.cloudCover.toFixed(0)}%
               </div>
-              <div className="text-sm text-gray-600">غطاء السحب</div>
+              <div className="text-sm text-gray-300">غطاء السحب</div>
             </div>
           </div>
         </div>

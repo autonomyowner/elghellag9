@@ -6,7 +6,7 @@ import { ArrowLeft, Leaf, Construction, Clock } from 'lucide-react'
 
 export default function NewVegetableListingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-green-900 to-gray-900 relative overflow-hidden" dir="rtl">
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-green-500/10"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(29,231,130,0.1),transparent_50%)]"></div>

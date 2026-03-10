@@ -273,22 +273,22 @@ const VarInteractiveMap: React.FC<VarInteractiveMapProps> = ({
             message: '<strong>خطأ في الرسم</strong> لا يمكن رسم المضلعات المتقاطعة'
           },
           shapeOptions: {
-            color: '#2E8B57',
-            fillColor: '#32CD32',
+            color: '#16a34a',
+            fillColor: '#22c55e',
             fillOpacity: 0.3
           }
         },
         rectangle: {
           shapeOptions: {
-            color: '#2E8B57',
-            fillColor: '#32CD32',
+            color: '#16a34a',
+            fillColor: '#22c55e',
             fillOpacity: 0.3
           }
         },
         circle: {
           shapeOptions: {
-            color: '#2E8B57',
-            fillColor: '#32CD32',
+            color: '#16a34a',
+            fillColor: '#22c55e',
             fillOpacity: 0.3
           }
         },
@@ -724,9 +724,9 @@ const VarInteractiveMap: React.FC<VarInteractiveMapProps> = ({
       )}
       
       {/* Instructions overlay - Hidden on mobile to save space */}
-      <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 bg-white/95 backdrop-blur-sm p-2 md:p-4 rounded-lg shadow-lg max-w-[150px] md:max-w-xs text-xs md:text-sm hidden md:block">
-        <h4 className="text-xs md:text-sm font-bold text-emerald-700 mb-1 md:mb-2">تعليمات الرسم</h4>
-        <ul className="text-xs text-gray-700 space-y-0.5 md:space-y-1">
+      <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 bg-black/70 backdrop-blur-sm p-2 md:p-4 rounded-xl shadow-lg max-w-[150px] md:max-w-xs text-xs md:text-sm hidden md:block border border-white/20">
+        <h4 className="text-xs md:text-sm font-bold text-green-400 mb-1 md:mb-2">تعليمات الرسم</h4>
+        <ul className="text-xs text-gray-300 space-y-0.5 md:space-y-1">
           <li>• استخدم أدوات الرسم</li>
           <li>• ارسم حدود الأرض</li>
           <li>• ستظهر المساحة تلقائياً</li>

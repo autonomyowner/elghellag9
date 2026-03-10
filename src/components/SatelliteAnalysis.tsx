@@ -67,52 +67,52 @@ const SatelliteAnalysis: React.FC<SatelliteAnalysisProps> = ({ sentinelData }) =
   const getHealthColor = (health: string) => {
     switch (health) {
       case 'excellent':
-        return 'text-green-600';
+        return 'text-green-400';
       case 'good':
-        return 'text-blue-600';
+        return 'text-blue-400';
       case 'fair':
-        return 'text-yellow-600';
+        return 'text-yellow-400';
       case 'poor':
-        return 'text-red-600';
+        return 'text-red-400';
       default:
-        return 'text-gray-600';
+        return 'text-gray-300';
     }
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'increasing':
-        return <TrendingUp className="w-4 h-4 text-green-600" />;
+        return <TrendingUp className="w-4 h-4 text-green-400" />;
       case 'decreasing':
-        return <TrendingDown className="w-4 h-4 text-red-600" />;
+        return <TrendingDown className="w-4 h-4 text-red-400" />;
       case 'stable':
-        return <Minus className="w-4 h-4 text-gray-600" />;
+        return <Minus className="w-4 h-4 text-gray-400" />;
       default:
-        return <Minus className="w-4 h-4 text-gray-600" />;
+        return <Minus className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const getHealthIcon = (health: string) => {
     switch (health) {
       case 'excellent':
-        return <Leaf className="w-4 h-4 text-green-600" />;
+        return <Leaf className="w-4 h-4 text-green-400" />;
       case 'good':
-        return <Leaf className="w-4 h-4 text-blue-600" />;
+        return <Leaf className="w-4 h-4 text-blue-400" />;
       case 'fair':
-        return <Leaf className="w-4 h-4 text-yellow-600" />;
+        return <Leaf className="w-4 h-4 text-yellow-400" />;
       case 'poor':
-        return <Leaf className="w-4 h-4 text-red-600" />;
+        return <Leaf className="w-4 h-4 text-red-400" />;
       default:
-        return <Leaf className="w-4 h-4 text-gray-600" />;
+        return <Leaf className="w-4 h-4 text-gray-400" />;
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Simplified Satellite Analysis Section */}
-      <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+      <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-white/20">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <Satellite className="w-5 h-5 text-blue-500" />
             تحليل الأقمار الصناعية
           </h3>
@@ -120,30 +120,30 @@ const SatelliteAnalysis: React.FC<SatelliteAnalysisProps> = ({ sentinelData }) =
 
         {/* Simple Data Display */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+          <div className="p-4 bg-green-500/20 rounded-xl border border-green-500/30">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-400">
                 {(safeData.ndvi.current * 100).toFixed(1)}%
               </div>
-              <div className="text-sm text-gray-600">NDVI</div>
+              <div className="text-sm text-gray-300">NDVI</div>
             </div>
           </div>
 
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="p-4 bg-blue-500/20 rounded-xl border border-blue-500/30">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-400">
                 {safeData.vegetation.density.toFixed(0)}%
               </div>
-              <div className="text-sm text-gray-600">كثافة النباتات</div>
+              <div className="text-sm text-gray-300">كثافة النباتات</div>
             </div>
           </div>
 
-          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="p-4 bg-purple-500/20 rounded-xl border border-purple-500/30">
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-purple-400">
                 {safeData.landUse.confidence * 100}%
               </div>
-              <div className="text-sm text-gray-600">مستوى الثقة</div>
+              <div className="text-sm text-gray-300">مستوى الثقة</div>
             </div>
           </div>
         </div>

@@ -175,13 +175,13 @@ const VegetableDetailPage: React.FC = () => {
 
   if (!vegetable) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-20">
+      <div className="min-h-screen bg-gradient-to-br from-green-900 to-gray-900 pt-20">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-white/20">
               <div className="text-6xl mb-4">🥬</div>
-              <h2 className="text-2xl font-bold mb-4 text-gray-800">الخضار غير موجودة</h2>
-              <p className="text-gray-600 mb-6">الخضار المطلوبة غير متوفرة</p>
+              <h2 className="text-2xl font-bold mb-4 text-white">الخضار غير موجودة</h2>
+              <p className="text-gray-300 mb-6">الخضار المطلوبة غير متوفرة</p>
               <button
                 onClick={() => router.push('/VAR/marketplace')}
                 className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-colors text-white"
@@ -196,7 +196,7 @@ const VegetableDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-green-900 to-gray-900 pt-20">
       <div className="container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -205,7 +205,7 @@ const VegetableDetailPage: React.FC = () => {
         >
           {/* Breadcrumb */}
           <nav className="mb-6">
-            <ol className="flex items-center space-x-2 space-x-reverse text-sm text-gray-600">
+            <ol className="flex items-center space-x-2 space-x-reverse text-sm text-gray-300">
               <li>
                 <Link href="/" className="hover:text-green-600 transition-colors">
                   الرئيسية
@@ -218,13 +218,13 @@ const VegetableDetailPage: React.FC = () => {
                 </Link>
               </li>
               <li>/</li>
-              <li className="text-gray-800 font-medium">{vegetable.title}</li>
+              <li className="text-white font-medium">{vegetable.title}</li>
             </ol>
           </nav>
 
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Image */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-white/20">
               <div className="h-96 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
                 <span className="text-9xl">
                   {getVegetableEmoji(vegetable.vegetable_type)}
@@ -233,10 +233,10 @@ const VegetableDetailPage: React.FC = () => {
             </div>
 
             {/* Details */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-white/20">
               {/* Header */}
               <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">{vegetable.title}</h1>
+                <h1 className="text-3xl font-bold text-white mb-2">{vegetable.title}</h1>
                 <div className="flex items-center justify-between">
                   <span className="text-3xl font-bold text-green-600">
                     {vegetable.price} {vegetable.currency} / {getUnitLabel(vegetable.unit)}
@@ -246,22 +246,22 @@ const VegetableDetailPage: React.FC = () => {
 
               {/* Description */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">الوصف</h3>
-                <p className="text-gray-600 leading-relaxed">{vegetable.description}</p>
+                <h3 className="text-lg font-semibold text-white mb-2">الوصف</h3>
+                <p className="text-gray-300 leading-relaxed">{vegetable.description}</p>
               </div>
 
               {/* Key Details */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <span className="text-sm text-gray-500">نوع الخضار</span>
+                  <span className="text-sm text-gray-400">نوع الخضار</span>
                   <p className="font-medium">{getVegetableTypeLabel(vegetable.vegetable_type)}</p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">الكمية المتوفرة</span>
+                  <span className="text-sm text-gray-400">الكمية المتوفرة</span>
                   <p className="font-medium">{vegetable.quantity} {getUnitLabel(vegetable.unit)}</p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">الطزاجة</span>
+                  <span className="text-sm text-gray-400">الطزاجة</span>
                   <p className={`font-medium ${
                     vegetable.freshness === 'excellent' ? 'text-green-600' :
                     vegetable.freshness === 'good' ? 'text-blue-600' : 'text-yellow-600'
@@ -270,7 +270,7 @@ const VegetableDetailPage: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">تاريخ الحصاد</span>
+                  <span className="text-sm text-gray-400">تاريخ الحصاد</span>
                   <p className="font-medium">{vegetable.harvest_date}</p>
                 </div>
               </div>
@@ -281,7 +281,7 @@ const VegetableDetailPage: React.FC = () => {
                   <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   </svg>
-                  <span className="text-gray-600">{vegetable.location}</span>
+                  <span className="text-gray-300">{vegetable.location}</span>
                 </div>
 
                 {vegetable.organic && (
@@ -297,7 +297,7 @@ const VegetableDetailPage: React.FC = () => {
                   <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  <span className="text-gray-600">{vegetable.contact_phone}</span>
+                  <span className="text-gray-300">{vegetable.contact_phone}</span>
                 </div>
               </div>
 

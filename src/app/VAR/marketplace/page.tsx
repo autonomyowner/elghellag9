@@ -179,7 +179,7 @@ const VegetablesMarketplacePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-slate-900 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-green-900 to-gray-900 pt-20">
       {/* Hero Section */}
       <section className="relative py-20 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-30" style={{
