@@ -24,7 +24,7 @@ export default function LoginForm() {
         const msg = result.error.message || result.error.statusText || JSON.stringify(result.error)
         setError(msg || 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
       } else {
-        window.location.href = '/VAR/marketplace'
+        window.location.href = '/marketplace'
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'حدث خطأ غير متوقع'

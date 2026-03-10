@@ -379,7 +379,7 @@ export default function HomePage() {
               </p>
             </div>
             <Link
-              href="/VAR/marketplace"
+              href="/marketplace"
               className="flex items-center gap-1.5 px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl text-white text-sm font-medium transition-all duration-200 flex-shrink-0"
             >
               عرض الكل
@@ -402,7 +402,7 @@ export default function HomePage() {
               <span className="text-5xl mb-4 block">🌱</span>
               <p className="text-white/50">لا توجد منتجات بعد. كن أول من يضيف!</p>
               <Link
-                href="/VAR/marketplace/new"
+                href="/marketplace/new"
                 className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-white text-sm font-medium transition-all duration-200"
               >
                 أضف منتجك
@@ -411,7 +411,7 @@ export default function HomePage() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {recentListings.map((listing) => (
-                <Link key={listing._id} href={`/VAR/marketplace/${listing._id}`}>
+                <Link key={listing._id} href={`/marketplace/${listing._id}`}>
                   <div className="group bg-white/8 backdrop-blur-xl border border-white/12 hover:border-white/25 rounded-3xl overflow-hidden transition-all duration-300 hover:bg-white/12 hover:shadow-xl hover:shadow-black/20 cursor-pointer h-full">
                     {/* Image / Emoji */}
                     <div className="h-28 bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center overflow-hidden relative">

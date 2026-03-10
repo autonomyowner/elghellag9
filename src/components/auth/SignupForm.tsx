@@ -40,7 +40,7 @@ export default function SignupForm() {
       }
 
       await createOrUpdate({ email, name, role })
-      window.location.href = '/VAR/marketplace'
+      window.location.href = '/marketplace'
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'حدث خطأ غير متوقع'
       setError(message)

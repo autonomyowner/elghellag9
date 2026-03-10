@@ -235,7 +235,7 @@ export default function PublicProfilePage({ params }: PageProps) {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Link href={`/VAR/marketplace/${listing._id}`}>
+                    <Link href={`/marketplace/${listing._id}`}>
                       <div className="group bg-white/8 backdrop-blur-xl border border-white/12 hover:border-white/25 rounded-3xl overflow-hidden transition-all duration-300 hover:bg-white/12 cursor-pointer">
                         <div className="h-28 bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center overflow-hidden">
                           {listing.images && listing.images.length > 0 ? (

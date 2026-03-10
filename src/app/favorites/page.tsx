@@ -95,7 +95,7 @@ export default function FavoritesPage() {
               لم تقم بحفظ أي منتجات بعد. تصفح السوق وأضف المنتجات التي تعجبك!
             </p>
             <Link
-              href="/VAR/marketplace"
+              href="/marketplace"
               className="flex items-center gap-2 px-6 py-3 bg-white/12 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl text-white font-semibold text-sm transition-all duration-200"
             >
               <ShoppingBag className="w-4 h-4" />
@@ -130,7 +130,7 @@ export default function FavoritesPage() {
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <Link href={`/VAR/marketplace/${typedListing._id}`}>
+                    <Link href={`/marketplace/${typedListing._id}`}>
                       <div className="group relative bg-white/8 backdrop-blur-xl border border-white/12 hover:border-white/25 rounded-3xl overflow-hidden transition-all duration-300 hover:bg-white/12 hover:shadow-xl hover:shadow-black/20 cursor-pointer">
                         {/* Image Area */}
                         <div className="relative h-40 bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center overflow-hidden">
