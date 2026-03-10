@@ -2,14 +2,28 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import {
   MapPin,
-  X
+  X,
+  ChevronLeft,
+  Tag,
 } from 'lucide-react';
+import { formatPrice } from '@/lib/formatters';
+import { CATEGORIES } from '@/lib/constants';
 
 export default function HomePage() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  const recentListings = useQuery(api.listings.getRecent, { limit: 6 });
+
+  const getCategoryEmoji = (category: string) =>
+    CATEGORIES.find((c) => c.value === category)?.emoji ?? '📦';
+
+  const getCategoryLabel = (category: string) =>
+    CATEGORIES.find((c) => c.value === category)?.label ?? category;
 
   useEffect(() => {
     setIsHydrated(true);
@@ -228,7 +242,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-6 md:gap-8">
             {/* Bubble 1 - شراء وبيع المنتجات الطازجة */}
-            <Link href="/VAR/marketplace" className="group">
+            <Link href="/VAR/marketplace?category=vegetables" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-green-500/30 to-green-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/25 border border-green-500/40 mx-auto mb-3">
                   <span className="text-4xl">🥦</span>
@@ -240,7 +254,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 2 - كراء المعدات الفلاحية */}
-            <Link href="/equipment" className="group">
+            <Link href="/VAR/marketplace?category=equipment" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-blue-500/30 to-blue-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/25 border border-blue-500/40 mx-auto mb-3">
                   <span className="text-4xl">🚜</span>
@@ -252,7 +266,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 3 - كراء الأراضي الفلاحية */}
-            <Link href="/land" className="group">
+            <Link href="/VAR/marketplace?category=land" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-yellow-500/30 to-yellow-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-500/25 border border-yellow-500/40 mx-auto mb-3">
                   <span className="text-4xl">🌾</span>
@@ -336,7 +350,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 10 - سوق المواشي */}
-            <Link href="/animals" className="group">
+            <Link href="/VAR/marketplace?category=livestock" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-red-500/30 to-red-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/25 border border-red-500/40 mx-auto mb-3">
                   <span className="text-4xl">🐄</span>
@@ -421,6 +435,101 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Recent Products Section */}
+      <div className="py-16 px-4" dir="rtl">
+        <div className="max-w-6xl mx-auto">
+          {/* Section Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                المنتجات الحديثة
+              </h2>
+              <p className="text-gray-300 text-sm">
+                أحدث ما أضافه المزارعون في السوق
+              </p>
+            </div>
+            <Link
+              href="/VAR/marketplace"
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-2xl text-white text-sm font-medium transition-all duration-200 flex-shrink-0"
+            >
+              عرض الكل
+              <ChevronLeft className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Cards */}
+          {!recentListings ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white/8 backdrop-blur-xl border border-white/12 rounded-3xl h-52 animate-pulse"
+                />
+              ))}
+            </div>
+          ) : recentListings.length === 0 ? (
+            <div className="bg-white/8 backdrop-blur-xl border border-white/12 rounded-3xl p-12 text-center">
+              <span className="text-5xl mb-4 block">🌱</span>
+              <p className="text-white/50">لا توجد منتجات بعد. كن أول من يضيف!</p>
+              <Link
+                href="/VAR/marketplace/new"
+                className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-white text-sm font-medium transition-all duration-200"
+              >
+                أضف منتجك
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {recentListings.map((listing) => (
+                <Link key={listing._id} href={`/VAR/marketplace/${listing._id}`}>
+                  <div className="group bg-white/8 backdrop-blur-xl border border-white/12 hover:border-white/25 rounded-3xl overflow-hidden transition-all duration-300 hover:bg-white/12 hover:shadow-xl hover:shadow-black/20 cursor-pointer h-full">
+                    {/* Image / Emoji */}
+                    <div className="h-28 bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center overflow-hidden relative">
+                      {listing.images && listing.images.length > 0 ? (
+                        <img
+                          src={listing.images[0]}
+                          alt={listing.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <span className="text-4xl opacity-70 group-hover:scale-110 transition-transform duration-300">
+                          {getCategoryEmoji(listing.category)}
+                        </span>
+                      )}
+                      {listing.isOrganic && (
+                        <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full text-white text-xs">
+                          عضوي
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-3 space-y-1.5">
+                      <p className="text-white font-medium text-xs leading-snug line-clamp-2">
+                        {listing.title}
+                      </p>
+                      <p className="text-white font-bold text-sm">
+                        {formatPrice(listing.price)}
+                      </p>
+                      <div className="flex items-center gap-1 text-white/40 text-xs">
+                        <Tag className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{getCategoryLabel(listing.category)}</span>
+                      </div>
+                      {listing.wilaya && (
+                        <div className="flex items-center gap-1 text-white/35 text-xs">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">{listing.wilaya}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

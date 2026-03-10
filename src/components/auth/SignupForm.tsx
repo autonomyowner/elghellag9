@@ -1,180 +1,264 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Mail, Lock, Eye, EyeOff, User, AlertCircle, Loader2, UserPlus, ShoppingCart, Store } from 'lucide-react'
+import { authClient } from '@/lib/auth-client'
+import { useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import Link from 'next/link'
 
-interface SignupFormProps {
-  onSuccess?: () => void
-}
+type Role = 'buyer' | 'seller'
 
-export default function SignupForm({ onSuccess }: SignupFormProps) {
+export default function SignupForm() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [location, setLocation] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [role, setRole] = useState<Role>('buyer')
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
-  
-  const router = useRouter()
-  const { signUp } = useSupabaseAuth()
+
+  const createOrUpdate = useMutation(api.users.createOrUpdate)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
-    setMessage(null)
+    setIsLoading(true)
 
     try {
-      // Sign up the user with profile data
-      const { error: signUpError } = await signUp(email, password, {
-        full_name: fullName,
-        phone: phone,
+      const { error: authError } = await authClient.signUp.email({
+        email,
+        password,
+        name,
       })
 
-      if (signUpError) {
-        throw signUpError
+      if (authError) {
+        setError(authError.message || 'فشل إنشاء الحساب. حاول مرة أخرى.')
+        return
       }
 
-      setMessage('تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.')
-      
-      if (onSuccess) {
-        onSuccess()
-      } else {
-        setTimeout(() => {
-          router.push('/auth/login')
-        }, 2000)
-      }
-    } catch (error) {
-      console.error('Signup error:', error)
-      setError((error as Error).message)
+      await createOrUpdate({ email, name, role })
+      window.location.href = '/marketplace'
+    } catch {
+      setError('حدث خطأ غير متوقع. حاول مرة أخرى.')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
+  const inputBase =
+    'w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-[#7fb069]/60 focus:ring-2 focus:ring-[#7fb069]/20 backdrop-blur-sm transition-all duration-200 text-sm'
+
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-lg border border-green-500/30 rounded-xl shadow-xl">
-      <h2 className="text-2xl font-bold mb-6 text-center text-white">إنشاء حساب جديد</h2>
-      
-      {message && (
-        <div className="mb-4 p-3 bg-green-500/20 border border-green-500/30 rounded-md text-green-400 text-sm">
-          {message}
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="w-full max-w-md mx-auto"
+    >
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl shadow-black/40">
+
+        {/* Logo / Title */}
+        <div className="text-center mb-7">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#2d5016]/60 border border-[#7fb069]/30 mb-4 shadow-lg shadow-[#2d5016]/40"
+          >
+            <span className="text-3xl">🌾</span>
+          </motion.div>
+          <h1 className="text-2xl font-bold text-white mb-1">إنشاء حساب جديد</h1>
+          <p className="text-white/50 text-sm">انضم إلى سوق الغلة الإلكتروني</p>
         </div>
-      )}
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-sm">
-          {error}
-        </div>
-      )}
-      
-      <form onSubmit={handleSignup} className="space-y-4">
-        <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-200 mb-1">
-            الاسم الكامل *
-          </label>
-          <input
-            id="fullName"
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-            className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="أدخل اسمك الكامل"
-            dir="rtl"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-1">
-            البريد الإلكتروني *
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="example@email.com"
-            dir="ltr"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-1">
-            كلمة المرور *
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="كلمة مرور قوية"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-200 mb-1">
-            رقم الهاتف
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="07xxxxxxxx"
-            dir="ltr"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-200 mb-1">
-            الموقع
-          </label>
-          <input
-            id="location"
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="المدينة، المحافظة"
-            dir="rtl"
-          />
-        </div>
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-gray-600 disabled:to-gray-500 text-white rounded-md transition-all duration-300 flex items-center justify-center font-medium"
-        >
-          {loading ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-              جاري إنشاء الحساب...
-            </>
-          ) : (
-            'إنشاء حساب'
+
+        {/* Error */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-5 overflow-hidden"
+            >
+              <div className="flex items-center gap-2 bg-red-500/15 border border-red-500/30 rounded-2xl px-4 py-3 text-red-300 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            </motion.div>
           )}
-        </button>
-      </form>
-      
-      <div className="mt-6 text-center text-sm text-gray-400">
-        لديك حساب بالفعل؟{' '}
-        <button
-          onClick={() => router.push('/auth/login')}
-          className="text-green-400 hover:text-green-300 underline"
-        >
-          تسجيل الدخول
-        </button>
+        </AnimatePresence>
+
+        <form onSubmit={handleSignup} className="space-y-4">
+
+          {/* Role Selector */}
+          <div>
+            <label className="block text-white/60 text-xs mb-2 font-medium">نوع الحساب</label>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Buyer */}
+              <motion.button
+                type="button"
+                onClick={() => setRole('buyer')}
+                whileTap={{ scale: 0.97 }}
+                className={`relative flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border transition-all duration-200 cursor-pointer ${
+                  role === 'buyer'
+                    ? 'bg-[#2d5016]/50 border-[#7fb069]/60 shadow-lg shadow-[#2d5016]/20'
+                    : 'bg-white/5 border-white/15 hover:bg-white/10 hover:border-white/25'
+                }`}
+              >
+                <ShoppingCart
+                  className={`w-6 h-6 transition-colors duration-200 ${
+                    role === 'buyer' ? 'text-[#7fb069]' : 'text-white/40'
+                  }`}
+                />
+                <span
+                  className={`text-sm font-semibold transition-colors duration-200 ${
+                    role === 'buyer' ? 'text-white' : 'text-white/50'
+                  }`}
+                >
+                  مشتري
+                </span>
+                <span
+                  className={`text-xs text-center transition-colors duration-200 ${
+                    role === 'buyer' ? 'text-white/60' : 'text-white/30'
+                  }`}
+                >
+                  أبحث عن منتجات
+                </span>
+                {role === 'buyer' && (
+                  <motion.div
+                    layoutId="role-indicator"
+                    className="absolute inset-0 rounded-2xl ring-2 ring-[#7fb069]/50"
+                  />
+                )}
+              </motion.button>
+
+              {/* Seller */}
+              <motion.button
+                type="button"
+                onClick={() => setRole('seller')}
+                whileTap={{ scale: 0.97 }}
+                className={`relative flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border transition-all duration-200 cursor-pointer ${
+                  role === 'seller'
+                    ? 'bg-[#2d5016]/50 border-[#7fb069]/60 shadow-lg shadow-[#2d5016]/20'
+                    : 'bg-white/5 border-white/15 hover:bg-white/10 hover:border-white/25'
+                }`}
+              >
+                <Store
+                  className={`w-6 h-6 transition-colors duration-200 ${
+                    role === 'seller' ? 'text-[#7fb069]' : 'text-white/40'
+                  }`}
+                />
+                <span
+                  className={`text-sm font-semibold transition-colors duration-200 ${
+                    role === 'seller' ? 'text-white' : 'text-white/50'
+                  }`}
+                >
+                  بائع
+                </span>
+                <span
+                  className={`text-xs text-center transition-colors duration-200 ${
+                    role === 'seller' ? 'text-white/60' : 'text-white/30'
+                  }`}
+                >
+                  أبيع منتجاتي
+                </span>
+                {role === 'seller' && (
+                  <motion.div
+                    layoutId="role-indicator"
+                    className="absolute inset-0 rounded-2xl ring-2 ring-[#7fb069]/50"
+                  />
+                )}
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="block text-white/60 text-xs mb-1.5 font-medium">الاسم الكامل</label>
+            <div className="relative">
+              <User className="absolute top-1/2 -translate-y-1/2 right-3.5 w-4 h-4 text-white/40 pointer-events-none" />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="أدخل اسمك الكامل"
+                required
+                className={`${inputBase} pr-10`}
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-white/60 text-xs mb-1.5 font-medium">البريد الإلكتروني</label>
+            <div className="relative">
+              <Mail className="absolute top-1/2 -translate-y-1/2 right-3.5 w-4 h-4 text-white/40 pointer-events-none" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@email.com"
+                required
+                dir="ltr"
+                className={`${inputBase} pr-10 text-left`}
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-white/60 text-xs mb-1.5 font-medium">كلمة المرور</label>
+            <div className="relative">
+              <Lock className="absolute top-1/2 -translate-y-1/2 right-3.5 w-4 h-4 text-white/40 pointer-events-none" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="8 أحرف على الأقل"
+                required
+                minLength={8}
+                dir="ltr"
+                className={`${inputBase} pr-10 pl-10 text-left`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute top-1/2 -translate-y-1/2 left-3.5 text-white/40 hover:text-white/70 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Submit */}
+          <motion.button
+            type="submit"
+            disabled={isLoading}
+            whileTap={{ scale: 0.98 }}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-[#2d5016] to-[#7fb069] hover:from-[#3a6b1e] hover:to-[#8fc47a] text-white font-semibold rounded-2xl px-4 py-3.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#2d5016]/30 mt-1"
+          >
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <UserPlus className="w-5 h-5" />
+            )}
+            <span>{isLoading ? 'جارٍ إنشاء الحساب...' : 'إنشاء حساب'}</span>
+          </motion.button>
+        </form>
+
+        {/* Login link */}
+        <p className="text-center text-white/45 text-sm mt-6">
+          لديك حساب بالفعل؟{' '}
+          <Link
+            href="/auth/login"
+            className="text-[#7fb069] hover:text-[#a0d485] font-medium transition-colors"
+          >
+            تسجيل الدخول
+          </Link>
+        </p>
       </div>
-    </div>
+    </motion.div>
   )
 }

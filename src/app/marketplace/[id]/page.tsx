@@ -1,372 +1,471 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { getMarketplaceItem, MarketplaceItem } from '@/lib/marketplaceService';
-import Image from 'next/image';
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
+import { useFavorite } from "@/hooks/useFavorite";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { formatPrice, formatRelativeTime } from "@/lib/formatters";
+import { CATEGORIES, CONDITIONS, UNITS } from "@/lib/constants";
+import {
+  ArrowLeft,
+  Heart,
+  Share2,
+  MapPin,
+  Package,
+  Leaf,
+  MessageCircle,
+  Eye,
+  ChevronRight,
+  ChevronLeft,
+  Loader2,
+  User,
+  BadgeCheck,
+  Tag,
+  Calendar,
+} from "lucide-react";
 
-export default function ProductDetailPage() {
+function ImageGallery({ storageIds }: { storageIds: string[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // We fetch URLs for all images
+  const url0 = useQuery(api.storage.getUrl, storageIds[0] ? { storageId: storageIds[0] as Id<"_storage"> } : "skip");
+  const url1 = useQuery(api.storage.getUrl, storageIds[1] ? { storageId: storageIds[1] as Id<"_storage"> } : "skip");
+  const url2 = useQuery(api.storage.getUrl, storageIds[2] ? { storageId: storageIds[2] as Id<"_storage"> } : "skip");
+  const url3 = useQuery(api.storage.getUrl, storageIds[3] ? { storageId: storageIds[3] as Id<"_storage"> } : "skip");
+  const url4 = useQuery(api.storage.getUrl, storageIds[4] ? { storageId: storageIds[4] as Id<"_storage"> } : "skip");
+
+  const urls = [url0, url1, url2, url3, url4].filter((_, i) => i < storageIds.length);
+  const activeUrl = urls[activeIndex];
+
+  const prev = () => setActiveIndex((i) => (i === 0 ? storageIds.length - 1 : i - 1));
+  const next = () => setActiveIndex((i) => (i === storageIds.length - 1 ? 0 : i + 1));
+
+  return (
+    <div className="space-y-3">
+      {/* Main image */}
+      <div
+        className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-white/10"
+        style={{ background: "rgba(255,255,255,0.05)" }}
+      >
+        <AnimatePresence mode="wait">
+          {activeUrl ? (
+            <motion.img
+              key={activeIndex}
+              src={activeUrl}
+              alt="product"
+              className="w-full h-full object-cover"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-white/30 animate-spin" />
+            </div>
+          )}
+        </AnimatePresence>
+
+        {storageIds.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/70 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4 text-white" />
+            </button>
+            <button
+              onClick={next}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-black/70 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 text-white" />
+            </button>
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {storageIds.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveIndex(i)}
+                  className="rounded-full transition-all duration-200"
+                  style={{
+                    width: i === activeIndex ? "20px" : "6px",
+                    height: "6px",
+                    background: i === activeIndex ? "#7fb069" : "rgba(255,255,255,0.4)",
+                  }}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Thumbnails */}
+      {storageIds.length > 1 && (
+        <div className="flex gap-2">
+          {urls.map((url, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              className="w-16 h-16 rounded-2xl overflow-hidden border-2 transition-all duration-200 flex-shrink-0"
+              style={{
+                borderColor: i === activeIndex ? "#7fb069" : "rgba(255,255,255,0.15)",
+              }}
+            >
+              {url ? (
+                <img src={url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-white/10" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CategoryPlaceholder({ category }: { category: string }) {
+  const cat = CATEGORIES.find((c) => c.value === category);
+  return (
+    <div
+      className="w-full aspect-[4/3] rounded-3xl flex items-center justify-center border border-white/10"
+      style={{ background: "rgba(45,80,22,0.3)" }}
+    >
+      <span className="text-8xl">{cat?.emoji ?? "🌾"}</span>
+    </div>
+  );
+}
+
+export default function ListingDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [item, setItem] = useState<MarketplaceItem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const listingId = params.id as string;
+  const { user, isAuthenticated } = useCurrentUser();
 
+  const listing = useQuery(api.listings.getById, {
+    listingId: listingId as Id<"listings">,
+  });
+  const seller = useQuery(
+    api.users.getById,
+    listing?.sellerId ? { userId: listing.sellerId } : "skip"
+  );
+
+  const incrementViews = useMutation(api.listings.incrementViews);
+  const getOrCreateConversation = useMutation(api.conversations.getOrCreate);
+
+  const { isFavorited, toggle } = useFavorite(listingId as Id<"listings">);
+  const [contactLoading, setContactLoading] = useState(false);
+
+  // Increment view count once on mount
   useEffect(() => {
-    const loadItem = async () => {
-      if (params.id) {
-        try {
-          const foundItem = await getMarketplaceItem(params.id as string);
-          if (foundItem) {
-            setItem(foundItem);
-          }
-        } catch (error) {
-          console.error('Error loading item:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
+    if (listing) {
+      incrementViews({ listingId: listingId as Id<"listings"> });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing?._id]);
+
+  const handleContact = async () => {
+    if (!isAuthenticated) {
+      router.push("/auth/login");
+      return;
+    }
+    if (!listing) return;
+    setContactLoading(true);
+    try {
+      const convId = await getOrCreateConversation({
+        sellerId: listing.sellerId,
+        listingId: listingId as Id<"listings">,
+      });
+      router.push(`/messages/${convId}`);
+    } catch {
+      // ignore
+    } finally {
+      setContactLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!listing) return;
+    const shareData = {
+      title: listing.title,
+      text: `${listing.title} - ${formatPrice(listing.price)}`,
+      url: window.location.href,
     };
-    loadItem();
-  }, [params.id]);
-
-  const formatPrice = (price: number) => {
-    if (price >= 1000000) {
-      return `${(price / 1000000).toFixed(1)}M دج`;
-    } else if (price >= 1000) {
-      return `${(price / 1000).toFixed(0)}K دج`;
-    }
-    return `${price} دج`;
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'products': return 'fas fa-apple-alt';
-      case 'lands': return 'fas fa-map-marked-alt';
-      case 'machines': return 'fas fa-tractor';
-      case 'nurseries': return 'fas fa-seedling';
-      case 'animals': return 'fas fa-cow';
-      case 'services': return 'fas fa-tools';
-      default: return 'fas fa-box';
+    if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
     }
   };
 
-  const getCategoryName = (category: string) => {
-    switch (category) {
-      case 'products': return 'المنتجات';
-      case 'lands': return 'الأراضي';
-      case 'machines': return 'المعدات';
-      case 'nurseries': return 'المشاتل';
-      case 'animals': return 'الحيوانات';
-      case 'services': return 'الخدمات';
-      default: return 'أخرى';
-    }
-  };
+  const categoryInfo = CATEGORIES.find((c) => c.value === listing?.category);
+  const conditionLabel = CONDITIONS.find((c) => c.value === listing?.condition)?.label;
+  const unitLabel = UNITS.find((u) => u.value === listing?.unit)?.label;
 
-  if (loading) {
+  if (listing === undefined) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-emerald-600">جاري التحميل...</p>
-        </div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+      >
+        <Loader2 className="w-10 h-10 text-green-400 animate-spin" />
       </div>
     );
   }
 
-  if (!item) {
+  if (listing === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold text-emerald-800 mb-4">المنتج غير موجود</h1>
-          <p className="text-emerald-600 mb-6">المنتج الذي تبحث عنه غير متوفر أو تم حذفه</p>
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        dir="rtl"
+        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-sm w-full rounded-3xl p-8 border border-white/10"
+          style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(20px)" }}
+        >
+          <div className="text-5xl mb-5">🌾</div>
+          <h2 className="text-white font-bold text-xl mb-2">المنتج غير موجود</h2>
+          <p className="text-white/50 text-sm mb-6">لم يتم العثور على هذا الإعلان</p>
           <Link
             href="/marketplace"
-            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors font-semibold"
+            className="block w-full py-3 rounded-2xl text-white font-bold text-sm text-center"
+            style={{ background: "linear-gradient(135deg, #2d5016, #7fb069)" }}
           >
             العودة للسوق
           </Link>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-lg border-b border-emerald-200/30 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            {/* Logo */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex items-center space-x-4 space-x-reverse"
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center">
-                <i className="fas fa-seedling text-white text-2xl"></i>
-              </div>
-              <div className="text-right">
-                <h1 className="text-2xl font-black bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
-                  الغلة
-                </h1>
-                <p className="text-sm text-emerald-600 font-semibold">منصة التكنولوجيا الزراعية</p>
-              </div>
-            </motion.div>
+    <div
+      className="min-h-screen pb-32 text-white"
+      dir="rtl"
+      style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+    >
+      {/* Background orbs */}
+      <div
+        className="fixed top-0 right-0 w-80 h-80 rounded-full blur-3xl pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(45,80,22,0.3) 0%, transparent 70%)" }}
+      />
 
-            {/* Auth Buttons */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex items-center space-x-4 space-x-reverse"
-            >
-              <Link
-                href="/auth/login"
-                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-300 font-semibold"
-              >
-                تسجيل الدخول
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="px-6 py-2 bg-transparent border-2 border-emerald-500 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-lg transition-all duration-300 font-semibold"
-              >
-                إنشاء حساب
-              </Link>
-            </motion.div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
+      {/* Top navigation bar */}
+      <div
+        className="sticky top-0 z-30 px-4 pt-4 pb-3"
+        style={{ backdropFilter: "blur(20px)", background: "rgba(13,31,7,0.6)" }}
+      >
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
           {/* Breadcrumb */}
-          <div className="flex items-center space-x-2 space-x-reverse mb-6 text-sm text-emerald-600">
-            <Link href="/marketplace" className="hover:text-emerald-800 transition-colors">
-              السوق
-            </Link>
-            <span>•</span>
-            <Link href={`/marketplace?category=${item.category}`} className="hover:text-emerald-800 transition-colors">
-              {getCategoryName(item.category)}
-            </Link>
-            <span>•</span>
-            <span className="text-emerald-800 font-semibold">{item.name}</span>
+          <div className="flex items-center gap-1.5 text-sm">
+            <Link href="/" className="text-white/40 hover:text-white/70 transition-colors">الرئيسية</Link>
+            <span className="text-white/20">/</span>
+            <Link href="/marketplace" className="text-white/40 hover:text-white/70 transition-colors">السوق</Link>
+            <span className="text-white/20">/</span>
+            <span className="text-white/60 truncate max-w-[120px]">{listing.title}</span>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Product Image and Basic Info */}
-            <div className="space-y-6">
-              {/* Main Image */}
-              <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 border border-emerald-200/50">
-                <div className="text-center">
-                  {item.images && item.images.length > 0 ? (
-                    <div className="space-y-4">
-                      {/* Main Image */}
-                      <div className="relative">
-                        <Image
-                          src={item.images[0]}
-                          alt={item.name}
-                          width={256}
-                          height={128}
-                          className="w-full h-64 object-cover rounded-2xl border-2 border-emerald-200"
-                        />
-                        <div className="absolute top-4 right-4 flex space-x-2 space-x-reverse">
-                          {item.is_organic && (
-                            <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                              عضوي
-                            </span>
-                          )}
-                          {item.is_verified && (
-                            <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
-                              موثق
-                            </span>
-                          )}
-                          {item.has_delivery && (
-                            <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm">
-                              توصيل متوفر
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Image Gallery */}
-                      {item.images.length > 1 && (
-                        <div className="grid grid-cols-4 gap-3">
-                          {item.images.slice(1, 5).map((image, index) => (
-                            <div key={index} className="relative">
-                              <Image
-                                src={image}
-                                alt={`${item.name} ${index + 2}`}
-                                width={64}
-                                height={64}
-                                className="w-full h-16 object-cover rounded-lg border border-emerald-200 cursor-pointer hover:opacity-80 transition-opacity"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="text-8xl mb-4">{item.image}</div>
-                      <div className="flex justify-center space-x-2 space-x-reverse mb-4">
-                        {item.is_organic && (
-                          <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                            عضوي
-                          </span>
-                        )}
-                        {item.is_verified && (
-                          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
-                            موثق
-                          </span>
-                        )}
-                        {item.has_delivery && (
-                          <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm">
-                            توصيل متوفر
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
+          {/* Back button */}
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="px-4 pt-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-8 space-y-5 lg:space-y-0">
+            {/* Left: Images */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              {listing.images.length > 0 ? (
+                <ImageGallery storageIds={listing.images} />
+              ) : (
+                <CategoryPlaceholder category={listing.category} />
+              )}
+            </motion.div>
+
+            {/* Right: Details */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="space-y-4"
+            >
+              {/* Category + badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
+                  style={{ background: "rgba(45,80,22,0.4)", color: "#7fb069", border: "1px solid rgba(127,176,105,0.2)" }}
+                >
+                  <span>{categoryInfo?.emoji}</span>
+                  <span>{categoryInfo?.label}</span>
                 </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-emerald-200/50">
-                <div className="flex gap-4">
-                  <button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition-colors">
-                    <i className="fas fa-phone ml-2"></i>
-                    اتصل بالبائع
-                  </button>
-                  <button className="flex-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 py-3 rounded-xl font-semibold transition-colors">
-                    <i className="fas fa-heart ml-2"></i>
-                    إضافة للمفضلة
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Product Details */}
-            <div className="space-y-6">
-              {/* Title and Price */}
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-emerald-200/50">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                      <i className={`${getCategoryIcon(item.category)} text-emerald-600`}></i>
-                    </div>
-                    <span className="text-emerald-600 font-semibold">{getCategoryName(item.category)}</span>
+                {listing.isOrganic && (
+                  <div
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
+                    style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80", border: "1px solid rgba(34,197,94,0.2)" }}
+                  >
+                    <Leaf className="w-3 h-3" />
+                    <span>عضوي</span>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-emerald-800">
-                      {formatPrice(item.price)}
-                    </div>
-                    <div className="text-emerald-600">لكل {item.unit}</div>
-                  </div>
-                </div>
-
-                <h1 className="text-3xl font-bold text-emerald-800 mb-4">{item.name}</h1>
-                <p className="text-emerald-600 leading-relaxed mb-4">{item.description}</p>
-
-                {/* Rating */}
-                <div className="flex items-center space-x-4 space-x-reverse mb-4">
-                  <div className="flex items-center text-yellow-500">
-                    {[...Array(5)].map((_, i) => (
-                      <i key={i} className={`fas fa-star ${i < Math.floor(item.rating) ? '' : 'far'}`}></i>
-                    ))}
-                    <span className="text-emerald-600 text-sm mr-2">({item.rating})</span>
-                  </div>
-                  <span className="text-emerald-600 text-sm">({item.reviews} تقييم)</span>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {item.tags.map((tag, index) => (
-                    <span key={index} className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Seller Info */}
-              <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-emerald-200/50">
-                <h3 className="text-xl font-bold text-emerald-800 mb-4">معلومات البائع</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-emerald-600">اسم البائع:</span>
-                    <span className="font-semibold text-emerald-800">{item.seller_name}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-emerald-600">الموقع:</span>
-                    <span className="font-semibold text-emerald-800">{item.location_name}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-emerald-600">المخزون المتوفر:</span>
-                    <span className="font-semibold text-emerald-800">{item.stock} {item.unit}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-emerald-600">تاريخ النشر:</span>
-                    <span className="font-semibold text-emerald-800">
-                      {new Date(item.created_at).toLocaleDateString('ar-SA')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Contact Info */}
-                {item.contact_info && (
-                  <div className="mt-4 pt-4 border-t border-emerald-200">
-                    <h4 className="font-semibold text-emerald-800 mb-3">معلومات الاتصال</h4>
-                    <div className="space-y-2">
-                      {item.contact_info.phone && (
-                        <div className="flex items-center space-x-3 space-x-reverse">
-                          <i className="fas fa-phone text-emerald-600"></i>
-                          <span className="text-emerald-700">{item.contact_info.phone}</span>
-                        </div>
-                      )}
-                      {item.contact_info.whatsapp && (
-                        <div className="flex items-center space-x-3 space-x-reverse">
-                          <i className="fab fa-whatsapp text-emerald-600"></i>
-                          <span className="text-emerald-700">{item.contact_info.whatsapp}</span>
-                        </div>
-                      )}
-                      {item.contact_info.email && (
-                        <div className="flex items-center space-x-3 space-x-reverse">
-                          <i className="fas fa-envelope text-emerald-600"></i>
-                          <span className="text-emerald-700">{item.contact_info.email}</span>
-                        </div>
-                      )}
-                    </div>
+                )}
+                {conditionLabel && (
+                  <div
+                    className="px-3 py-1.5 rounded-full text-xs font-medium"
+                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    {conditionLabel}
                   </div>
                 )}
               </div>
 
-              {/* Specifications */}
-              {item.specifications && (
-                <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 border border-emerald-200/50">
-                  <h3 className="text-xl font-bold text-emerald-800 mb-4">المواصفات</h3>
-                  <div className="space-y-3">
-                    {Object.entries(item.specifications).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-emerald-600">{key}:</span>
-                        <span className="font-semibold text-emerald-800">{String(value)}</span>
-                      </div>
-                    ))}
+              {/* Title */}
+              <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                {listing.title}
+              </h1>
+
+              {/* Price */}
+              <div
+                className="inline-block px-5 py-3 rounded-2xl"
+                style={{ background: "rgba(45,80,22,0.4)", border: "1px solid rgba(127,176,105,0.2)" }}
+              >
+                <span
+                  className="text-2xl font-black"
+                  style={{ color: "#d4af37" }}
+                >
+                  {formatPrice(listing.price)}
+                </span>
+                {unitLabel && (
+                  <span className="text-white/50 text-sm mr-2">/ {unitLabel}</span>
+                )}
+              </div>
+
+              {/* Meta info */}
+              <div className="space-y-2.5">
+                {listing.wilaya && (
+                  <div className="flex items-center gap-2.5 text-white/60 text-sm">
+                    <MapPin className="w-4 h-4 flex-shrink-0" />
+                    <span>{listing.wilaya}{listing.location ? ` - ${listing.location}` : ""}</span>
                   </div>
+                )}
+                {listing.quantity !== undefined && listing.quantity !== null && (
+                  <div className="flex items-center gap-2.5 text-white/60 text-sm">
+                    <Package className="w-4 h-4 flex-shrink-0" />
+                    <span>الكمية المتوفرة: {listing.quantity} {unitLabel ?? ""}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2.5 text-white/50 text-xs">
+                  <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{formatRelativeTime(listing._creationTime)}</span>
+                  <span className="w-1 h-1 rounded-full bg-white/20" />
+                  <Eye className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{listing.viewCount ?? 0} مشاهدة</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div
+                className="rounded-2xl p-4"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                <h3 className="text-white font-semibold text-sm mb-2">الوصف</h3>
+                <p className="text-white/60 text-sm leading-relaxed">{listing.description}</p>
+              </div>
+
+              {/* Seller info */}
+              {seller && (
+                <div
+                  className="rounded-2xl p-4 flex items-center gap-3"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: "rgba(127,176,105,0.15)" }}
+                  >
+                    {seller.avatarUrl ? (
+                      <img src={seller.avatarUrl} alt={seller.name} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <User className="w-6 h-6 text-green-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-white font-semibold text-sm truncate">{seller.name}</p>
+                      {seller.isVerifiedSeller && (
+                        <BadgeCheck className="w-4 h-4 text-green-400 flex-shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-white/40 text-xs">{seller.wilaya ?? "بائع معتمد"}</p>
+                  </div>
+                  <Tag className="w-4 h-4 text-white/30" />
                 </div>
               )}
-            </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3 pt-2">
+                {/* Contact seller */}
+                {user?._id !== listing.sellerId && (
+                  <button
+                    onClick={handleContact}
+                    disabled={contactLoading}
+                    className="flex-1 flex items-center justify-center gap-2.5 py-4 rounded-2xl text-white font-bold text-sm transition-all duration-200 disabled:opacity-60"
+                    style={{
+                      background: "linear-gradient(135deg, #2d5016, #7fb069)",
+                      boxShadow: "0 4px 20px rgba(45,80,22,0.4)",
+                    }}
+                  >
+                    {contactLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <MessageCircle className="w-5 h-5" />
+                        <span>تواصل مع البائع</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Favorite */}
+                <button
+                  onClick={toggle}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-200 hover:scale-105"
+                  style={{
+                    background: isFavorited ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.07)",
+                    borderColor: isFavorited ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.12)",
+                  }}
+                >
+                  <Heart
+                    className={`w-5 h-5 transition-all duration-200 ${isFavorited ? "fill-white text-white" : "text-white/50"}`}
+                  />
+                </button>
+
+                {/* Share */}
+                <button
+                  onClick={handleShare}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center border border-white/12 transition-all duration-200 hover:scale-105"
+                  style={{ background: "rgba(255,255,255,0.07)" }}
+                >
+                  <Share2 className="w-5 h-5 text-white/50" />
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
-      </main>
+        </div>
+      </div>
     </div>
   );
-} 
+}

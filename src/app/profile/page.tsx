@@ -1,428 +1,270 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
-import { supabase } from '@/lib/supabase/supabaseClient';
-import { Equipment, LandListing } from '@/types/database.types';
-import AuthGuard from '@/components/AuthGuard';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { WILAYAS } from '@/lib/constants';
+import {
+  User,
+  Phone,
+  MessageSquare,
+  MapPin,
+  FileText,
+  Save,
+  Loader2,
+  ShieldCheck,
+  ChevronDown,
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
-const ProfilePage: React.FC = () => {
-  const { user, profile, updateProfile } = useSupabaseAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [userListings, setUserListings] = useState<{
-    equipment: Equipment[];
-    land: LandListing[];
-    animals: any[];
-  }>({ equipment: [], land: [], animals: [] });
+export default function ProfilePage() {
+  const { user, isLoading: authLoading, isAuthenticated } = useCurrentUser();
+  const updateProfile = useMutation(api.users.updateProfile);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    full_name: '',
-    bio: '',
+  const [form, setForm] = useState({
+    name: '',
     phone: '',
+    whatsapp: '',
+    wilaya: '',
     location: '',
-    website: ''
+    bio: '',
   });
-  const [formError, setFormError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    if (profile) {
-      setFormData({
-        full_name: profile.full_name || '',
-        bio: profile.bio || '',
-        phone: profile.phone || '',
-        location: profile.location || '',
-        website: profile.website || ''
-      });
+    if (!authLoading && !isAuthenticated) {
+      window.location.href = '/auth/sign-in';
     }
-  }, [profile]);
+  }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
-    if (user) {
-      fetchUserListings();
-    }
-  }, [user]);
-
-  const fetchUserListings = async () => {
-    if (!user) return;
-    try {
-      // Fetch equipment listings
-      const { data: equipmentData, error: equipmentError } = await supabase
-        .from('equipment')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (equipmentError) {
-        console.error('Error fetching equipment:', equipmentError);
-      }
-
-      // Fetch land listings
-      const { data: landData, error: landError } = await supabase
-        .from('land_listings')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (landError) {
-        console.error('Error fetching land listings:', landError);
-      }
-
-      // Fetch animals listings
-      const { data: animalsData, error: animalsError } = await supabase
-        .from('animals')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (animalsError) {
-        console.error('Error fetching animals:', animalsError);
-      }
-
-      setUserListings({
-        equipment: equipmentData || [],
-        land: landData || [],
-        animals: animalsData || []
+    if (user && !initialized) {
+      setForm({
+        name: user.name ?? '',
+        phone: user.phone ?? '',
+        whatsapp: user.whatsapp ?? '',
+        wilaya: user.wilaya ?? '',
+        location: user.location ?? '',
+        bio: user.bio ?? '',
       });
-    } catch (error) {
-      console.error('Error fetching user listings:', error);
+      setInitialized(true);
     }
-  };
+  }, [user, initialized]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setFormError('');
-
+    setIsSaving(true);
     try {
-      const { error } = await updateProfile(formData);
-      if (error) {
-        setFormError(error.message || 'حدث خطأ أثناء تحديث الملف الشخصي');
-      } else {
-        setIsEditing(false);
-      }
-    } catch (error) {
-      console.error('Profile update error:', error);
-      setFormError('حدث خطأ غير متوقع');
+      await updateProfile({
+        name: form.name.trim() || undefined,
+        phone: form.phone.trim() || undefined,
+        whatsapp: form.whatsapp.trim() || undefined,
+        wilaya: form.wilaya || undefined,
+        location: form.location.trim() || undefined,
+        bio: form.bio.trim() || undefined,
+      });
+      toast.success('تم حفظ الملف الشخصي بنجاح');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'حدث خطأ';
+      toast.error(msg);
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
-  const handleDeleteListing = async (type: 'equipment' | 'land' | 'animals', id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return;
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#2d5016] via-[#1a3a0a] to-[#0d1f05] flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-    try {
-      const tableName = type === 'equipment' ? 'equipment' : type === 'land' ? 'land_listings' : 'animals';
-      const { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error(`Error deleting ${type}:`, error);
-        alert('حدث خطأ أثناء حذف الإعلان');
-      } else {
-        // Refresh listings
-        fetchUserListings();
-      }
-    } catch (error) {
-      console.error(`Error deleting ${type}:`, error);
-      alert('حدث خطأ غير متوقع');
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-SA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat('ar-SA').format(price) + ' ' + currency;
-  };
-
-
+  const avatarLetter = (user?.name ?? user?.email ?? 'U')[0]?.toUpperCase();
+  const roleLabel = user?.role === 'seller' ? 'بائع' : 'مشتري';
 
   return (
-    <AuthGuard>
-      <main className="min-h-screen gradient-bg-primary pt-20" aria-label="صفحة الملف الشخصي">
-        <section className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <header className="text-center mb-8" aria-label="معلومات الملف الشخصي">
-              <h1 className="text-4xl font-bold text-white mb-4">الملف الشخصي</h1>
-              <p className="text-xl text-green-200">إدارة معلوماتك الشخصية وإعلاناتك</p>
-            </header>
+    <div
+      className="min-h-screen bg-gradient-to-br from-[#2d5016] via-[#1a3a0a] to-[#0d1f05] pt-20 pb-16 px-4"
+      dir="rtl"
+    >
+      {/* Ambient glows */}
+      <div className="fixed top-0 right-1/3 w-96 h-96 bg-green-500/8 rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed bottom-1/3 left-1/4 w-72 h-72 bg-emerald-400/6 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Profile Information */}
-          <section className="card-responsive glass mb-8" aria-label="المعلومات الشخصية">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">المعلومات الشخصية</h2>
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="px-4 py-2 bg-gradient-to-r from-brand-primary to-brand-accent text-white rounded-lg hover:shadow-lg transition-all duration-300"
-                aria-label={isEditing ? 'إلغاء التعديل' : 'تعديل المعلومات الشخصية'}
-              >
-                {isEditing ? 'إلغاء' : 'تعديل'}
-              </button>
-            </div>
-
-            {isEditing ? (
-              <form onSubmit={handleSubmit} className="space-y-6" aria-label="نموذج تعديل الملف الشخصي">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="full_name" className="block text-sm font-medium text-green-200 mb-2">
-                      الاسم الكامل
-                    </label>
-                    <input
-                      type="text"
-                      id="full_name"
-                      name="full_name"
-                      value={formData.full_name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-400"
-                      placeholder="أدخل اسمك الكامل"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-green-200 mb-2">
-                      رقم الهاتف
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-400"
-                      placeholder="أدخل رقم الهاتف"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-green-200 mb-2">
-                      الموقع
-                    </label>
-                    <input
-                      type="text"
-                      id="location"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-400"
-                      placeholder="أدخل موقعك"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="website" className="block text-sm font-medium text-green-200 mb-2">
-                      الموقع الإلكتروني
-                    </label>
-                    <input
-                      type="url"
-                      id="website"
-                      name="website"
-                      value={formData.website}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-400"
-                      placeholder="https://example.com"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="bio" className="block text-sm font-medium text-green-200 mb-2">
-                    نبذة شخصية
-                  </label>
-                  <textarea
-                    id="bio"
-                    name="bio"
-                    value={formData.bio}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
-                    placeholder="اكتب نبذة عن نفسك..."
-                  />
-                </div>
-                <div className="flex justify-end gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300"
-                    aria-label="إلغاء التعديل"
-                  >
-                    إلغاء
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-6 py-3 bg-gradient-to-r from-brand-primary to-brand-accent text-white rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50"
-                    aria-busy={loading}
-                  >
-                    {loading ? (
-                      <span className="flex items-center gap-2"><svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" strokeOpacity="0.2" /><path d="M12 2a10 10 0 0 1 10 10" strokeWidth="4" stroke="currentColor" /></svg> جاري الحفظ...</span>
-                    ) : 'حفظ التغييرات'}
-                  </button>
-                </div>
-                {/* Error message for profile update */}
-                {formError && (
-                  <div className="mt-4 p-3 rounded bg-red-500/20 border border-red-500/30 text-red-200 text-sm" role="alert">
-                    {formError}
-                  </div>
-                )}
-              </form>
+      <div className="max-w-2xl mx-auto">
+        {/* Avatar + Role */}
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-center mb-8"
+        >
+          <div className="relative mb-4">
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                className="w-24 h-24 rounded-full object-cover border-2 border-white/20 shadow-lg"
+              />
             ) : (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-sm text-green-200">الاسم الكامل</span>
-                    <p className="text-white font-medium">{profile?.full_name || 'غير محدد'}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-green-200">رقم الهاتف</span>
-                    <p className="text-white font-medium">{profile?.phone || 'غير محدد'}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-green-200">الموقع</span>
-                    <p className="text-white font-medium">{profile?.location || 'غير محدد'}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-green-200">الموقع الإلكتروني</span>
-                    <p className="text-white font-medium">{profile?.website || 'غير محدد'}</p>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-sm text-green-200">نبذة شخصية</span>
-                  <p className="text-white font-medium">{profile?.bio || 'لا توجد نبذة شخصية'}</p>
-                </div>
+              <div className="w-24 h-24 rounded-full bg-white/12 backdrop-blur-sm border-2 border-white/20 flex items-center justify-center shadow-lg shadow-black/20">
+                <span className="text-3xl font-bold text-white">{avatarLetter}</span>
               </div>
             )}
-          </section>
+            <div className="absolute -bottom-1 -left-1 px-2.5 py-0.5 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full text-xs text-white font-semibold flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" />
+              {roleLabel}
+            </div>
+          </div>
+          <h1 className="text-xl font-bold text-white">{user?.name}</h1>
+          <p className="text-white/50 text-sm">{user?.email}</p>
+        </motion.div>
 
-          {/* User Listings */}
-          <section className="card-responsive glass" aria-label="إعلانات المستخدم">
-            <h2 className="text-2xl font-bold text-white mb-6">إعلاناتي</h2>
+        {/* Form */}
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          onSubmit={handleSubmit}
+          className="bg-white/8 backdrop-blur-xl border border-white/15 rounded-3xl p-6 space-y-5"
+        >
+          <h2 className="text-white font-bold text-base mb-1">تعديل الملف الشخصي</h2>
 
-            {/* Equipment Listings */}
-            {userListings.equipment.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-4">المعدات الزراعية</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {userListings.equipment.map((equipment) => (
-                    <div key={equipment.id} className="bg-white/10 rounded-lg p-4 border border-white/20">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="text-white font-medium">{equipment.title}</h4>
-                        <button
-                          onClick={() => handleDeleteListing('equipment', equipment.id)}
-                          className="text-red-400 hover:text-red-300 text-sm"
-                          aria-label="حذف الإعلان"
-                        >
-                          حذف
-                        </button>
-                      </div>
-                      <p className="text-green-200 text-sm mb-2">{equipment.description}</p>
-                      <p className="text-white font-bold">{formatPrice(equipment.price, equipment.currency)}</p>
-                      <p className="text-white/70 text-xs">{formatDate(equipment.created_at)}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Name */}
+          <div className="space-y-1.5">
+            <label className="text-white/60 text-sm flex items-center gap-2">
+              <User className="w-3.5 h-3.5" />
+              الاسم الكامل
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="أدخل اسمك الكامل"
+              className="w-full bg-white/8 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-white/40 focus:bg-white/12 transition-all duration-200"
+            />
+          </div>
+
+          {/* Phone */}
+          <div className="space-y-1.5">
+            <label className="text-white/60 text-sm flex items-center gap-2">
+              <Phone className="w-3.5 h-3.5" />
+              رقم الهاتف
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="05xxxxxxxx"
+              dir="ltr"
+              className="w-full bg-white/8 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-white/40 focus:bg-white/12 transition-all duration-200 text-right"
+            />
+          </div>
+
+          {/* WhatsApp */}
+          <div className="space-y-1.5">
+            <label className="text-white/60 text-sm flex items-center gap-2">
+              <MessageSquare className="w-3.5 h-3.5" />
+              واتساب
+            </label>
+            <input
+              type="tel"
+              name="whatsapp"
+              value={form.whatsapp}
+              onChange={handleChange}
+              placeholder="05xxxxxxxx"
+              dir="ltr"
+              className="w-full bg-white/8 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-white/40 focus:bg-white/12 transition-all duration-200 text-right"
+            />
+          </div>
+
+          {/* Wilaya */}
+          <div className="space-y-1.5">
+            <label className="text-white/60 text-sm flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5" />
+              الولاية
+            </label>
+            <div className="relative">
+              <select
+                name="wilaya"
+                value={form.wilaya}
+                onChange={handleChange}
+                className="w-full bg-white/8 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/40 focus:bg-white/12 transition-all duration-200 appearance-none cursor-pointer"
+              >
+                <option value="" className="bg-[#1a3a0a] text-white/60">
+                  اختر الولاية
+                </option>
+                {WILAYAS.map((w) => (
+                  <option key={w} value={w} className="bg-[#1a3a0a] text-white">
+                    {w}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Location detail */}
+          <div className="space-y-1.5">
+            <label className="text-white/60 text-sm flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5" />
+              العنوان التفصيلي
+            </label>
+            <input
+              type="text"
+              name="location"
+              value={form.location}
+              onChange={handleChange}
+              placeholder="الحي، البلدية..."
+              className="w-full bg-white/8 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-white/40 focus:bg-white/12 transition-all duration-200"
+            />
+          </div>
+
+          {/* Bio */}
+          <div className="space-y-1.5">
+            <label className="text-white/60 text-sm flex items-center gap-2">
+              <FileText className="w-3.5 h-3.5" />
+              نبذة عنك
+            </label>
+            <textarea
+              name="bio"
+              value={form.bio}
+              onChange={handleChange}
+              placeholder="اكتب نبذة قصيرة عن نفسك..."
+              rows={3}
+              className="w-full bg-white/8 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-white/30 text-sm resize-none focus:outline-none focus:border-white/40 focus:bg-white/12 transition-all duration-200"
+            />
+          </div>
+
+          {/* Save Button */}
+          <motion.button
+            type="submit"
+            disabled={isSaving}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-white/15 hover:bg-white/25 disabled:bg-white/5 disabled:opacity-50 backdrop-blur-sm border border-white/20 rounded-2xl text-white font-bold text-sm transition-all duration-200 shadow-lg shadow-black/10"
+          >
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
             )}
-
-            {/* Land Listings */}
-            {userListings.land.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-4">الأراضي الزراعية</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {userListings.land.map((land) => (
-                    <div key={land.id} className="bg-white/10 rounded-lg p-4 border border-white/20">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="text-white font-medium">{land.title}</h4>
-                        <button
-                          onClick={() => handleDeleteListing('land', land.id)}
-                          className="text-red-400 hover:text-red-300 text-sm"
-                          aria-label="حذف الإعلان"
-                        >
-                          حذف
-                        </button>
-                      </div>
-                      <p className="text-green-200 text-sm mb-2">{land.description}</p>
-                      <p className="text-white font-bold">{formatPrice(land.price, land.currency)}</p>
-                      <p className="text-white/70 text-xs">{formatDate(land.created_at)}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Animals Listings */}
-            {userListings.animals.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-4">الحيوانات</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {userListings.animals.map((animal) => (
-                    <div key={animal.id} className="bg-white/10 rounded-lg p-4 border border-white/20">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="text-white font-medium">{animal.title}</h4>
-                        <button
-                          onClick={() => handleDeleteListing('animals', animal.id)}
-                          className="text-red-400 hover:text-red-300 text-sm"
-                          aria-label="حذف الإعلان"
-                        >
-                          حذف
-                        </button>
-                      </div>
-                      <p className="text-green-200 text-sm mb-2">{animal.description}</p>
-                      <p className="text-white font-bold">{formatPrice(animal.price, animal.currency)}</p>
-                      <p className="text-white/70 text-xs">{formatDate(animal.created_at)}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Empty State */}
-            {userListings.equipment.length === 0 && userListings.land.length === 0 && userListings.animals.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-white/70 mb-4">لا توجد إعلانات حتى الآن</p>
-                <div className="flex gap-4 justify-center">
-                  <Link
-                    href="/equipment/new"
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    إضافة معدات
-                  </Link>
-                  <Link
-                    href="/land/new"
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    إضافة أرض
-                  </Link>
-                  <Link
-                    href="/animals/new"
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    إضافة حيوانات
-                  </Link>
-                </div>
-              </div>
-            )}
-          </section>
-        </div>
-      </section>
-    </main>
-    </AuthGuard>
+            {isSaving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+          </motion.button>
+        </motion.form>
+      </div>
+    </div>
   );
-};
-
-export default ProfilePage;
+}

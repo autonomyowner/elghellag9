@@ -1,367 +1,387 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic';
-import AuthGuard from '@/components/AuthGuard'
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { formatPrice, formatRelativeTime } from "@/lib/formatters";
+import { CATEGORIES } from "@/lib/constants";
+import {
+  Plus,
+  Eye,
+  BarChart3,
+  Package,
+  CheckCircle,
+  Archive,
+  Edit3,
+  Loader2,
+  ChevronDown,
+  ShieldAlert,
+  Layers,
+} from "lucide-react";
 
-const MotionDiv = dynamic(() => import('framer-motion').then(mod => mod.motion.div), { ssr: false, loading: () => <div /> });
-const MotionButton = dynamic(() => import('framer-motion').then(mod => mod.motion.button), { ssr: false, loading: () => <button /> });
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext'
-import { useSupabaseData } from '@/hooks/useSupabase'
-import { 
-  User, Settings, Plus, Package, BarChart3, MessageCircle, 
-  Heart, Star, Tractor, ArrowLeft, Edit3, Trash2, Eye,
-  MapPin, Calendar, DollarSign, Phone, Mail, Globe
-} from 'lucide-react'
-import Link from 'next/link'
+type ListingStatus = "active" | "sold" | "draft" | "archived";
 
-export default function DashboardPage() {
-  const { user, signOut } = useSupabaseAuth()
-  const { getEquipment, isOnline, isWithinLimits } = useSupabaseData()
-  const [equipment, setEquipment] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [profile] = useState<any>({ full_name: 'مستخدم' })
-  const [activeTab, setActiveTab] = useState('overview')
+const STATUS_CONFIG: Record<ListingStatus, { label: string; color: string; bg: string; border: string }> = {
+  active: { label: "نشط", color: "#4ade80", bg: "rgba(34,197,94,0.15)", border: "rgba(34,197,94,0.25)" },
+  sold: { label: "مباع", color: "#facc15", bg: "rgba(250,204,21,0.15)", border: "rgba(250,204,21,0.25)" },
+  draft: { label: "مسودة", color: "rgba(255,255,255,0.5)", bg: "rgba(255,255,255,0.08)", border: "rgba(255,255,255,0.12)" },
+  archived: { label: "مؤرشف", color: "rgba(255,255,255,0.35)", bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.08)" },
+};
 
-  const handleSignOut = async () => {
-    await signOut()
-  }
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  delay,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number | string;
+  delay: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4 }}
+      className="rounded-3xl p-5 border border-white/10"
+      style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(16px)" }}
+    >
+      <div
+        className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3"
+        style={{ background: "rgba(127,176,105,0.15)" }}
+      >
+        <Icon className="w-5 h-5 text-green-300" />
+      </div>
+      <p className="text-white font-black text-2xl">{value}</p>
+      <p className="text-white/45 text-xs mt-1">{label}</p>
+    </motion.div>
+  );
+}
 
-  const handleDeleteEquipment = async (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
-      // TODO: Implement delete functionality
-      console.log('Delete equipment:', id)
+function StatusBadge({ status }: { status: ListingStatus }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.archived;
+  return (
+    <span
+      className="px-2.5 py-1 rounded-full text-xs font-semibold"
+      style={{ color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}
+    >
+      {cfg.label}
+    </span>
+  );
+}
+
+function StatusDropdown({
+  listingId,
+  currentStatus,
+}: {
+  listingId: Id<"listings">;
+  currentStatus: ListingStatus;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const updateStatus = useMutation(api.listings.updateStatus);
+
+  const options: ListingStatus[] = ["active", "sold", "archived"];
+
+  const handleChange = async (status: ListingStatus) => {
+    setOpen(false);
+    setLoading(true);
+    try {
+      await updateStatus({ listingId, status });
+    } finally {
+      setLoading(false);
     }
-  }
-
-  const tabs = [
-    { id: 'overview', name: 'نظرة عامة', icon: <BarChart3 className="w-5 h-5" /> },
-    { id: 'equipment', name: 'معداتي', icon: <Package className="w-5 h-5" /> },
-    { id: 'messages', name: 'الرسائل', icon: <MessageCircle className="w-5 h-5" /> },
-    { id: 'favorites', name: 'المفضلة', icon: <Heart className="w-5 h-5" /> },
-    { id: 'profile', name: 'الملف الشخصي', icon: <User className="w-5 h-5" /> },
-    { id: 'settings', name: 'الإعدادات', icon: <Settings className="w-5 h-5" /> },
-  ]
+  };
 
   return (
-    <AuthGuard>
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]" dir="rtl">
-      {/* Header */}
-      <header className="bg-black/30 backdrop-blur-lg border-b border-green-500/30">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-2 text-white hover:text-green-400 transition-colors">
-                <ArrowLeft className="w-5 h-5" />
-                <span>العودة للرئيسية</span>
-              </Link>
-              <div className="flex items-center gap-2">
-                <Tractor className="w-8 h-8 text-green-400" />
-                <span className="text-2xl font-bold text-white">لوحة التحكم</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-white text-sm">
-                مرحباً، {profile?.full_name || user!.email}
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-              >
-                تسجيل الخروج
-              </button>
-            </div>
-          </div>
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        disabled={loading}
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition-all hover:opacity-80 disabled:opacity-50"
+        style={{ background: "rgba(255,255,255,0.07)", borderColor: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.65)" }}
+      >
+        {loading ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : (
+          <>
+            <StatusBadge status={currentStatus} />
+            <ChevronDown className="w-3 h-3 opacity-50" />
+          </>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <>
+            <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -4 }}
+              transition={{ duration: 0.15 }}
+              className="absolute left-0 top-full mt-1.5 z-20 min-w-[140px] rounded-2xl overflow-hidden border border-white/12 shadow-2xl"
+              style={{ background: "rgba(20,40,10,0.95)", backdropFilter: "blur(20px)" }}
+            >
+              {options.map((status) => (
+                <button
+                  key={status}
+                  onClick={() => handleChange(status)}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs hover:bg-white/5 transition-colors text-right"
+                >
+                  <StatusBadge status={status} />
+                </button>
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function ListingRow({ listing }: { listing: { _id: Id<"listings">; title: string; price: number; category: string; status: string; viewCount?: number; _creationTime: number; wilaya?: string } }) {
+  const cat = CATEGORIES.find((c) => c.value === listing.category);
+  const status = listing.status as ListingStatus;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      className="flex items-center gap-3 p-4 rounded-2xl border border-white/8 group transition-all hover:border-white/14"
+      style={{ background: "rgba(255,255,255,0.04)" }}
+    >
+      {/* Category emoji */}
+      <div
+        className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0"
+        style={{ background: "rgba(45,80,22,0.35)" }}
+      >
+        {cat?.emoji ?? "🌾"}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <p className="text-white font-semibold text-sm truncate">{listing.title}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-green-300 font-bold text-xs">{formatPrice(listing.price)}</span>
+          {listing.wilaya && (
+            <span className="text-white/30 text-xs">{listing.wilaya}</span>
+          )}
+          <span className="text-white/25 text-xs">{formatRelativeTime(listing._creationTime)}</span>
         </div>
-      </header>
+      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="glass p-6 rounded-2xl border border-green-500/30 sticky top-8">
-              <nav className="space-y-2">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    {tab.icon}
-                    <span>{tab.name}</span>
-                  </button>
-                ))}
-              </nav>
-            </div>
+      {/* Views */}
+      <div className="hidden sm:flex items-center gap-1 text-white/35 text-xs">
+        <Eye className="w-3.5 h-3.5" />
+        <span>{listing.viewCount ?? 0}</span>
+      </div>
+
+      {/* Status dropdown */}
+      <StatusDropdown listingId={listing._id} currentStatus={status} />
+
+      {/* Edit button */}
+      <Link
+        href={`/marketplace/${listing._id}/edit`}
+        className="w-9 h-9 rounded-xl flex items-center justify-center border border-white/10 bg-white/5 hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100"
+      >
+        <Edit3 className="w-4 h-4 text-white/60" />
+      </Link>
+    </motion.div>
+  );
+}
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const { user, isLoading } = useCurrentUser();
+  const myListings = useQuery(api.listings.getMyListings);
+
+  if (isLoading || myListings === undefined) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+      >
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 text-green-400 animate-spin mx-auto mb-3" />
+          <p className="text-white/40 text-sm">جاري التحميل...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    router.push("/auth/login");
+    return null;
+  }
+
+  if (user.role !== "seller") {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-4"
+        dir="rtl"
+        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-sm w-full rounded-3xl p-8 border border-white/10"
+          style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(20px)" }}
+        >
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+            style={{ background: "rgba(248,113,113,0.15)" }}
+          >
+            <ShieldAlert className="w-8 h-8 text-red-400" />
           </div>
+          <h2 className="text-white font-bold text-xl mb-2">لوحة البائعين فقط</h2>
+          <p className="text-white/50 text-sm mb-6">
+            هذه اللوحة مخصصة للبائعين. حسابك مسجل كمشترٍ.
+          </p>
+          <Link
+            href="/marketplace"
+            className="block w-full py-3 rounded-2xl text-white font-bold text-sm text-center"
+            style={{ background: "linear-gradient(135deg, #2d5016, #7fb069)" }}
+          >
+            تصفح السوق
+          </Link>
+        </motion.div>
+      </div>
+    );
+  }
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {activeTab === 'overview' && (
-              <MotionDiv
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <h1 className="text-3xl font-bold text-white mb-8">نظرة عامة</h1>
-                
-                {/* Stats Cards */}
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="glass p-6 rounded-xl border border-green-500/30">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-white/70 text-sm">معداتي</p>
-                        <p className="text-2xl font-bold text-white">{equipment?.length || 0}</p>
-                      </div>
-                      <Package className="w-8 h-8 text-green-400" />
-                    </div>
-                  </div>
-                  <div className="glass p-6 rounded-xl border border-green-500/30">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-white/70 text-sm">المشاهدات</p>
-                                                 <p className="text-2xl font-bold text-white">
-                           {equipment?.reduce((total, item) => total + ((item as any).view_count || 0), 0) || 0}
-                         </p>
-                      </div>
-                      <Eye className="w-8 h-8 text-blue-400" />
-                    </div>
-                  </div>
-                  <div className="glass p-6 rounded-xl border border-green-500/30">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-white/70 text-sm">التقييم</p>
-                                                 <p className="text-2xl font-bold text-white">
-                           {((profile as any)?.rating)?.toFixed(1) || '0.0'}
-                         </p>
-                      </div>
-                      <Star className="w-8 h-8 text-yellow-400" />
-                    </div>
-                  </div>
-                </div>
+  // Compute stats
+  const totalListings = myListings.length;
+  const activeListings = myListings.filter((l) => l.status === "active").length;
+  const soldListings = myListings.filter((l) => l.status === "sold").length;
+  const totalViews = myListings.reduce((sum, l) => sum + (l.viewCount ?? 0), 0);
 
-                {/* Recent Equipment */}
-                <div className="glass p-6 rounded-xl border border-green-500/30">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-white">المعدات الحديثة</h2>
-                    <Link
-                      href="/dashboard?tab=equipment"
-                      className="text-green-400 hover:text-green-300 text-sm"
-                    >
-                      عرض الكل
-                    </Link>
-                  </div>
-                  <div className="space-y-4">
-                    {equipment?.slice(0, 3).map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 p-4 bg-black/30 rounded-lg">
-                        <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                          <Package className="w-6 h-6 text-green-400" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-white font-medium">{item.title}</h3>
-                          <p className="text-white/70 text-sm">{item.location}</p>
-                        </div>
-                        <div className="text-left">
-                          <p className="text-green-400 font-bold">{item.price?.toLocaleString('en-US')} د.ج</p>
-                                                     <p className="text-white/70 text-sm">{(item as any).view_count || 0} مشاهدة</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </MotionDiv>
-            )}
+  return (
+    <div
+      className="min-h-screen pb-20 text-white"
+      dir="rtl"
+      style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+    >
+      {/* Background orbs */}
+      <div
+        className="fixed top-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(45,80,22,0.35) 0%, transparent 70%)" }}
+      />
 
-            {activeTab === 'equipment' && (
-              <MotionDiv
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                <div className="flex items-center justify-between">
-                  <h1 className="text-3xl font-bold text-white">معداتي</h1>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                    <Plus className="w-5 h-5" />
-                    إضافة معدة جديدة
-                  </button>
-                </div>
-
-                                  {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400"></div>
-                  </div>
-                ) : (
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {equipment?.map((item) => (
-                      <div key={item.id} className="glass p-6 rounded-xl border border-green-500/30">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>
-                            <p className="text-white/70 text-sm mb-2">{item.description}</p>
-                            <div className="flex items-center gap-4 text-sm text-white/70">
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-4 h-4" />
-                                {item.location}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {item.year}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <button className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors">
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteEquipment(item.id)}
-                              className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="w-4 h-4 text-green-400" />
-                            <span className="text-green-400 font-bold">{item.price?.toLocaleString('en-US')} د.ج</span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-white/70">
-                                                         <span className="flex items-center gap-1">
-                               <Eye className="w-4 h-4" />
-                               {(item as any).view_count || 0}
-                             </span>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              item.is_available 
-                                ? 'bg-green-500/20 text-green-400' 
-                                : 'bg-red-500/20 text-red-400'
-                            }`}>
-                              {item.is_available ? 'متاح' : 'غير متاح'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+      {/* Header */}
+      <div className="px-4 pt-24 pb-8">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between mb-8"
+          >
+            <div>
+              <p className="text-white/40 text-sm mb-1">مرحباً،</p>
+              <h1 className="text-2xl sm:text-3xl font-black text-white">
+                {user.name}
+              </h1>
+              <div className="flex items-center gap-2 mt-1.5">
+                {user.isVerifiedSeller && (
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                    style={{ background: "rgba(127,176,105,0.15)", color: "#7fb069", border: "1px solid rgba(127,176,105,0.2)" }}
+                  >
+                    <CheckCircle className="w-3 h-3" />
+                    <span>بائع موثق</span>
                   </div>
                 )}
-              </MotionDiv>
-            )}
+                <span
+                  className="px-2.5 py-1 rounded-full text-xs font-medium"
+                  style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}
+                >
+                  بائع
+                </span>
+              </div>
+            </div>
 
-            {activeTab === 'profile' && (
-              <MotionDiv
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
+            {/* Add listing button */}
+            <Link href="/marketplace/new">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 px-4 py-3 rounded-2xl text-white font-bold text-sm"
+                style={{
+                  background: "linear-gradient(135deg, #2d5016, #7fb069)",
+                  boxShadow: "0 4px 20px rgba(45,80,22,0.4)",
+                }}
               >
-                <h1 className="text-3xl font-bold text-white">الملف الشخصي</h1>
-                
-                <div className="glass p-8 rounded-xl border border-green-500/30">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400"></div>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-6">
-                        <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center">
-                          <User className="w-10 h-10 text-green-400" />
-                        </div>
-                        <div>
-                          <h2 className="text-2xl font-bold text-white">{profile?.full_name || 'اسم المستخدم'}</h2>
-                          <p className="text-green-400">{profile?.user_type === 'farmer' ? 'مزارع' : profile?.user_type === 'buyer' ? 'مشتري' : 'مزارع وتاجر'}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Star className="w-4 h-4 text-yellow-400" />
-                                                         <span className="text-white/70">{((profile as any)?.rating)?.toFixed(1) || '0.0'} ({(profile as any)?.total_ratings || 0} تقييم)</span>
-                          </div>
-                        </div>
-                      </div>
+                <Plus className="w-5 h-5" />
+                <span className="hidden sm:inline">إضافة منتج جديد</span>
+              </motion.button>
+            </Link>
+          </motion.div>
 
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-green-300 mb-2">الاسم الكامل</label>
-                            <input
-                              type="text"
-                              value={profile?.full_name || ''}
-                              className="w-full p-3 bg-black/50 text-white rounded-lg border border-white/20 focus:border-green-400 focus:outline-none"
-                              placeholder="أدخل اسمك الكامل"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-green-300 mb-2">رقم الهاتف</label>
-                            <input
-                              type="tel"
-                              value={profile?.phone || ''}
-                              className="w-full p-3 bg-black/50 text-white rounded-lg border border-white/20 focus:border-green-400 focus:outline-none"
-                              placeholder="07xxxxxxxx"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-green-300 mb-2">الموقع</label>
-                            <input
-                              type="text"
-                              value={profile?.location || ''}
-                              className="w-full p-3 bg-black/50 text-white rounded-lg border border-white/20 focus:border-green-400 focus:outline-none"
-                              placeholder="المدينة، الولاية"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-green-300 mb-2">نوع الحساب</label>
-                            <select
-                              value={profile?.user_type || 'farmer'}
-                              className="w-full p-3 bg-black/50 text-white rounded-lg border border-white/20 focus:border-green-400 focus:outline-none"
-                            >
-                              <option value="farmer">مزارع</option>
-                              <option value="buyer">مشتري</option>
-                              <option value="both">مزارع وتاجر</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button className="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium">
-                        حفظ التغييرات
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </MotionDiv>
-            )}
-
-            {/* Placeholder for other tabs */}
-            {activeTab === 'messages' && (
-              <div className="glass p-8 rounded-xl border border-green-500/30 text-center">
-                <MessageCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-white mb-2">الرسائل</h2>
-                <p className="text-white/70">سيتم إضافة نظام الرسائل قريباً</p>
-              </div>
-            )}
-
-            {activeTab === 'favorites' && (
-              <div className="glass p-8 rounded-xl border border-green-500/30 text-center">
-                <Heart className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-white mb-2">المفضلة</h2>
-                <p className="text-white/70">سيتم إضافة نظام المفضلة قريباً</p>
-              </div>
-            )}
-
-            {activeTab === 'settings' && (
-              <div className="glass p-8 rounded-xl border border-green-500/30 text-center">
-                <Settings className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                <h2 className="text-xl font-bold text-white mb-2">الإعدادات</h2>
-                <p className="text-white/70">سيتم إضافة الإعدادات قريباً</p>
-              </div>
-            )}
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            <StatCard icon={Layers} label="إجمالي الإعلانات" value={totalListings} delay={0.05} />
+            <StatCard icon={Package} label="إعلانات نشطة" value={activeListings} delay={0.1} />
+            <StatCard icon={Archive} label="مُباعة" value={soldListings} delay={0.15} />
+            <StatCard icon={Eye} label="إجمالي المشاهدات" value={totalViews.toLocaleString("ar-DZ")} delay={0.2} />
           </div>
+
+          {/* Listings section */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white font-bold text-lg">إعلاناتي</h2>
+              <div className="flex items-center gap-1 text-white/35 text-xs">
+                <BarChart3 className="w-3.5 h-3.5" />
+                <span>{totalListings} إعلان</span>
+              </div>
+            </div>
+
+            {myListings.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-16 rounded-3xl border border-white/8"
+                style={{ background: "rgba(255,255,255,0.04)" }}
+              >
+                <div
+                  className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
+                  style={{ background: "rgba(127,176,105,0.1)" }}
+                >
+                  <Package className="w-9 h-9 text-green-400/50" />
+                </div>
+                <h3 className="text-white font-bold text-lg mb-2">لا توجد إعلانات بعد</h3>
+                <p className="text-white/40 text-sm mb-6">ابدأ بإضافة منتجك الأول للسوق الزراعي</p>
+                <Link
+                  href="/marketplace/new"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold text-sm"
+                  style={{ background: "linear-gradient(135deg, #2d5016, #7fb069)" }}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>إضافة منتج جديد</span>
+                </Link>
+              </motion.div>
+            ) : (
+              <div className="space-y-2.5">
+                <AnimatePresence>
+                  {myListings.map((listing) => (
+                    <ListingRow key={listing._id} listing={listing} />
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </motion.div>
         </div>
       </div>
     </div>
-    </AuthGuard>
-  )
+  );
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import ClientLayout from '@/components/ClientLayout';
-import HydrationSuppressor from '@/components/HydrationSuppressor';
-import MobileOptimizedInterface from '@/components/MobileOptimizedInterface';
+import Header from '@/components/Header';
+import BottomNav from '@/components/shared/BottomNav';
+import { ConvexClientProvider } from '@/components/providers/ConvexProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -79,11 +79,11 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#2d5016" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        
+
         {/* Critical preconnect only */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
+
         {/* Favicon and app icons */}
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -93,7 +93,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="msapplication-TileImage" content="/favicon-32x32.png" />
-        
+
         {/* Structured Data */}
         <script
           type="application/ld+json"
@@ -115,13 +115,13 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className} suppressHydrationWarning>
-        <HydrationSuppressor>
-          <MobileOptimizedInterface>
-            <ClientLayout>
-              {children}
-            </ClientLayout>
-          </MobileOptimizedInterface>
-        </HydrationSuppressor>
+        <ConvexClientProvider>
+          <Header />
+          <main className="min-h-screen pb-20 md:pb-0">
+            {children}
+          </main>
+          <BottomNav />
+        </ConvexClientProvider>
       </body>
     </html>
   );

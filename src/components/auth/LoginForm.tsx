@@ -1,131 +1,152 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, LogIn } from 'lucide-react'
+import { authClient } from '@/lib/auth-client'
+import Link from 'next/link'
 
-interface LoginFormProps {
-  onSuccess?: () => void
-}
-
-export default function LoginForm({ onSuccess }: LoginFormProps) {
+export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
-  const router = useRouter()
-  const { signIn } = useSupabaseAuth()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Login button clicked - starting login process')
-    setLoading(true)
     setError(null)
+    setIsLoading(true)
 
     try {
-      console.log('Attempting to sign in with email:', email)
-      const { error: signInError } = await signIn(email, password)
-
-      if (signInError) {
-        console.error('Sign in error:', signInError)
-        throw signInError
-      }
-
-      console.log('Login successful, redirecting...')
-      if (onSuccess) {
-        onSuccess()
+      const { error: authError } = await authClient.signIn.email({ email, password })
+      if (authError) {
+        setError(authError.message || 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
       } else {
-        router.push('/dashboard')
-        router.refresh()
+        window.location.href = '/marketplace'
       }
-    } catch (error) {
-      console.error('Login error:', error)
-      setError((error as Error).message || 'حدث خطأ أثناء تسجيل الدخول')
+    } catch {
+      setError('حدث خطأ غير متوقع. حاول مرة أخرى.')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const handleButtonClick = (e: React.MouseEvent) => {
-    console.log('Button clicked - event:', e)
-    // This will help debug if the button click is being registered
-  }
+  const inputBase =
+    'w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-[#7fb069]/60 focus:ring-2 focus:ring-[#7fb069]/20 backdrop-blur-sm transition-all duration-200 text-sm'
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-lg border border-green-500/30 rounded-xl shadow-xl">
-      <h2 className="text-2xl font-bold mb-6 text-center text-white">تسجيل الدخول</h2>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-md text-red-400 text-sm">
-          {error}
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="w-full max-w-md mx-auto"
+    >
+      {/* Card */}
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl shadow-black/40">
+
+        {/* Logo / Title */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#2d5016]/60 border border-[#7fb069]/30 mb-4 shadow-lg shadow-[#2d5016]/40"
+          >
+            <span className="text-3xl">🌾</span>
+          </motion.div>
+          <h1 className="text-2xl font-bold text-white mb-1">مرحباً بك في الغلة</h1>
+          <p className="text-white/50 text-sm">سوق المزارعين الإلكتروني</p>
         </div>
-      )}
-      
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-1">
-            البريد الإلكتروني
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="example@email.com"
-            dir="ltr"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-1">
-            كلمة المرور
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2 bg-black/50 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="كلمة المرور"
-          />
-        </div>
-        
-        <button
-          type="submit"
-          disabled={loading}
-          onClick={handleButtonClick}
-          className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-gray-600 disabled:to-gray-500 text-white rounded-md transition-all duration-300 flex items-center justify-center font-medium cursor-pointer"
-        >
-          {loading ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-              جاري تسجيل الدخول...
-            </>
-          ) : (
-            'تسجيل الدخول'
+
+        {/* Error */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-5 overflow-hidden"
+            >
+              <div className="flex items-center gap-2 bg-red-500/15 border border-red-500/30 rounded-2xl px-4 py-3 text-red-300 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            </motion.div>
           )}
-        </button>
-      </form>
-      
-      <div className="mt-6 text-center text-sm text-gray-400">
-        ليس لديك حساب؟{' '}
-        <button
-          onClick={() => router.push('/auth/signup')}
-          className="text-green-400 hover:text-green-300 underline cursor-pointer"
-        >
-          إنشاء حساب جديد
-        </button>
+        </AnimatePresence>
+
+        {/* Email/Password Form */}
+        <form onSubmit={handleEmailLogin} className="space-y-4">
+
+          {/* Email */}
+          <div className="relative">
+            <label className="block text-white/60 text-xs mb-1.5 font-medium">البريد الإلكتروني</label>
+            <div className="relative">
+              <Mail className="absolute top-1/2 -translate-y-1/2 right-3.5 w-4 h-4 text-white/40 pointer-events-none" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="example@email.com"
+                required
+                dir="ltr"
+                className={`${inputBase} pr-10 text-left`}
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div className="relative">
+            <label className="block text-white/60 text-xs mb-1.5 font-medium">كلمة المرور</label>
+            <div className="relative">
+              <Lock className="absolute top-1/2 -translate-y-1/2 right-3.5 w-4 h-4 text-white/40 pointer-events-none" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                dir="ltr"
+                className={`${inputBase} pr-10 pl-10 text-left`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute top-1/2 -translate-y-1/2 left-3.5 text-white/40 hover:text-white/70 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Submit */}
+          <motion.button
+            type="submit"
+            disabled={isLoading}
+            whileTap={{ scale: 0.98 }}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-[#2d5016] to-[#7fb069] hover:from-[#3a6b1e] hover:to-[#8fc47a] text-white font-semibold rounded-2xl px-4 py-3.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#2d5016]/30 mt-2"
+          >
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <LogIn className="w-5 h-5" />
+            )}
+            <span>{isLoading ? 'جارٍ تسجيل الدخول...' : 'تسجيل الدخول'}</span>
+          </motion.button>
+        </form>
+
+        {/* Signup link */}
+        <p className="text-center text-white/45 text-sm mt-6">
+          ليس لديك حساب؟{' '}
+          <Link
+            href="/auth/signup"
+            className="text-[#7fb069] hover:text-[#a0d485] font-medium transition-colors"
+          >
+            إنشاء حساب جديد
+          </Link>
+        </p>
       </div>
-      
-      <div className="mt-4 text-center">
-        <button className="text-green-400 hover:text-green-300 text-sm underline cursor-pointer">
-          نسيت كلمة المرور؟
-        </button>
-      </div>
-    </div>
+    </motion.div>
   )
 }

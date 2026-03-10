@@ -166,3 +166,4 @@ scripts/
 .cursor
 .cursorrules
 .cursorignore
+.env*.local
