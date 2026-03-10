@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { Id } from '../../convex/_generated/dataModel';
 import {
   MapPin,
   ChevronLeft,
@@ -11,6 +12,34 @@ import {
 } from 'lucide-react';
 import { formatPrice } from '@/lib/formatters';
 import { CATEGORIES } from '@/lib/constants';
+
+function RecentListingImage({ storageId, categoryEmoji }: { storageId: string; categoryEmoji: string }) {
+  const url = useQuery(api.storage.getUrl, { storageId: storageId as Id<"_storage"> });
+
+  if (url === undefined) {
+    return (
+      <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-green-400/40 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (url) {
+    return (
+      <img
+        src={url}
+        alt="listing"
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+    );
+  }
+
+  return (
+    <span className="text-4xl opacity-70 group-hover:scale-110 transition-transform duration-300">
+      {categoryEmoji}
+    </span>
+  );
+}
 
 export default function HomePage() {
   const [isHydrated, setIsHydrated] = useState(false);
@@ -416,10 +445,9 @@ export default function HomePage() {
                     {/* Image / Emoji */}
                     <div className="h-28 bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center overflow-hidden relative">
                       {listing.images && listing.images.length > 0 ? (
-                        <img
-                          src={listing.images[0]}
-                          alt={listing.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        <RecentListingImage
+                          storageId={listing.images[0]}
+                          categoryEmoji={getCategoryEmoji(listing.category)}
                         />
                       ) : (
                         <span className="text-4xl opacity-70 group-hover:scale-110 transition-transform duration-300">
