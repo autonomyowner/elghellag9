@@ -6,7 +6,6 @@ import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import {
   MapPin,
-  X,
   ChevronLeft,
   Tag,
 } from 'lucide-react';
@@ -15,7 +14,6 @@ import { CATEGORIES } from '@/lib/constants';
 
 export default function HomePage() {
   const [isHydrated, setIsHydrated] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   const recentListings = useQuery(api.listings.getRecent, { limit: 6 });
 
@@ -28,24 +26,6 @@ export default function HomePage() {
   useEffect(() => {
     setIsHydrated(true);
   }, []);
-
-  // Show welcome modal after page fully loads
-  useEffect(() => {
-    if (isHydrated) {
-      const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcome');
-      if (!hasSeenWelcome) {
-        const timer = setTimeout(() => {
-          setShowWelcomeModal(true);
-        }, 1500);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [isHydrated]);
-
-  const closeWelcomeModal = () => {
-    setShowWelcomeModal(false);
-    sessionStorage.setItem('hasSeenWelcome', 'true');
-  };
 
   // Optimized loading state
   if (!isHydrated) {
@@ -72,59 +52,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen min-w-[320px] mx-auto bg-gradient-to-br from-green-900 to-gray-900 text-white">
-      {/* Welcome Modal - Fixed Center */}
-      {showWelcomeModal && (
-        <div
-          className="fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          style={{ position: 'fixed', margin: 0, padding: 0 }}
-        >
-          <div className="relative bg-gradient-to-br from-green-900 via-emerald-900 to-green-800 rounded-2xl p-6 md:p-10 mx-4 max-w-md w-full border border-green-500/30 shadow-2xl animate-fadeIn">
-            {/* Close Button */}
-            <button
-              onClick={closeWelcomeModal}
-              className="absolute top-3 left-3 w-8 h-8 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 group"
-            >
-              <X className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-            </button>
-
-            {/* Logo */}
-            <div className="text-center mb-4">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full overflow-hidden border-4 border-green-400/50 shadow-lg">
-                <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-green-300">الغلة</h2>
-            </div>
-
-            {/* Welcome Message */}
-            <div className="text-center mb-6" dir="rtl">
-              <p className="text-xl md:text-2xl text-white leading-relaxed font-medium">
-                مرحبا بكم
-              </p>
-              <p className="text-base md:text-lg text-green-200 leading-relaxed mt-3">
-                ان شاء الله منصة الغلة ستكون جاهزة قريبا
-              </p>
-            </div>
-
-            {/* Decorative Elements */}
-            <div className="flex justify-center gap-2 mb-6">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
-            </div>
-
-            {/* Skip Button */}
-            <div className="text-center">
-              <button
-                onClick={closeWelcomeModal}
-                className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                متابعة
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Hero Section with Optimized Video Background */}
       <div id="hero" className="relative h-screen w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden max-w-none">
         <video

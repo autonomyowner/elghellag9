@@ -27,21 +27,23 @@ export default function SignupForm() {
     setIsLoading(true)
 
     try {
-      const { error: authError } = await authClient.signUp.email({
+      const result = await authClient.signUp.email({
         email,
         password,
         name,
       })
 
-      if (authError) {
-        setError(authError.message || 'فشل إنشاء الحساب. حاول مرة أخرى.')
+      if (result.error) {
+        const msg = result.error.message || result.error.statusText || JSON.stringify(result.error)
+        setError(msg || 'فشل إنشاء الحساب. حاول مرة أخرى.')
         return
       }
 
       await createOrUpdate({ email, name, role })
-      window.location.href = '/marketplace'
-    } catch {
-      setError('حدث خطأ غير متوقع. حاول مرة أخرى.')
+      window.location.href = '/VAR/marketplace'
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'حدث خطأ غير متوقع'
+      setError(message)
     } finally {
       setIsLoading(false)
     }

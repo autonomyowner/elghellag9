@@ -19,14 +19,16 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      const { error: authError } = await authClient.signIn.email({ email, password })
-      if (authError) {
-        setError(authError.message || 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
+      const result = await authClient.signIn.email({ email, password })
+      if (result.error) {
+        const msg = result.error.message || result.error.statusText || JSON.stringify(result.error)
+        setError(msg || 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
       } else {
-        window.location.href = '/marketplace'
+        window.location.href = '/VAR/marketplace'
       }
-    } catch {
-      setError('حدث خطأ غير متوقع. حاول مرة أخرى.')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'حدث خطأ غير متوقع'
+      setError(message)
     } finally {
       setIsLoading(false)
     }
