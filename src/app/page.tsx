@@ -169,7 +169,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-6 md:gap-8">
             {/* Bubble 1 - شراء وبيع المنتجات الطازجة */}
-            <Link href="/VAR/marketplace?category=vegetables" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-green-500/30 to-green-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/25 border border-green-500/40 mx-auto mb-3">
                   <span className="text-4xl">🥦</span>
@@ -181,7 +181,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 2 - كراء المعدات الفلاحية */}
-            <Link href="/VAR/marketplace?category=equipment" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-blue-500/30 to-blue-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/25 border border-blue-500/40 mx-auto mb-3">
                   <span className="text-4xl">🚜</span>
@@ -193,7 +193,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 3 - كراء الأراضي الفلاحية */}
-            <Link href="/VAR/marketplace?category=land" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-yellow-500/30 to-yellow-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-500/25 border border-yellow-500/40 mx-auto mb-3">
                   <span className="text-4xl">🌾</span>
@@ -205,7 +205,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 4 - اليد العاملة */}
-            <Link href="/labor" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-purple-500/30 to-purple-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 border border-purple-500/40 mx-auto mb-3">
                   <span className="text-4xl">🧑‍🌾</span>
@@ -217,7 +217,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 5 - المشاتل */}
-            <Link href="/nurseries" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-emerald-500/30 to-emerald-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/25 border border-emerald-500/40 mx-auto mb-3">
                   <span className="text-4xl">🌱</span>
@@ -229,7 +229,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 6 - خدمات التحليل والدراسات */}
-            <Link href="/analysis" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-indigo-500/30 to-indigo-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/25 border border-indigo-500/40 mx-auto mb-3">
                   <span className="text-4xl">🛰️</span>
@@ -241,7 +241,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 7 - خدمات التصدير */}
-            <Link href="/exports" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-teal-500/30 to-teal-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/25 border border-teal-500/40 mx-auto mb-3">
                   <span className="text-4xl">🌍</span>
@@ -253,7 +253,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 8 - التوصيل */}
-            <Link href="/delivery" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-orange-500/30 to-orange-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/25 border border-orange-500/40 mx-auto mb-3">
                   <span className="text-4xl">🚚</span>
@@ -265,7 +265,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 9 - عروض خاصة */}
-            <Link href="/services" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-pink-500/30 to-pink-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-pink-500/25 border border-pink-500/40 mx-auto mb-3">
                   <span className="text-4xl">🎁</span>
@@ -277,7 +277,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 10 - سوق المواشي */}
-            <Link href="/VAR/marketplace?category=livestock" className="group">
+            <Link href="/marketplace" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-red-500/30 to-red-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/25 border border-red-500/40 mx-auto mb-3">
                   <span className="text-4xl">🐄</span>
@@ -477,20 +477,20 @@ export default function HomePage() {
             <div>
               <h4 className="font-bold mb-4 text-green-300">السوق</h4>
               <ul className="space-y-2 text-white/70">
-                <li><Link href="/land" className="hover:text-green-300 transition-colors">الأراضي</Link></li>
+                <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">الأراضي</Link></li>
                 <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">المنتجات</Link></li>
-                <li><Link href="/equipment" className="hover:text-green-300 transition-colors">المعدات</Link></li>
-                <li><Link href="/nurseries" className="hover:text-green-300 transition-colors">المشاتل</Link></li>
+                <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">المعدات</Link></li>
+                <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">المشاتل</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-bold mb-4 text-green-300">الخدمات</h4>
               <ul className="space-y-2 text-white/70">
-                <li><Link href="/delivery" className="hover:text-green-300 transition-colors">التوصيل</Link></li>
-                <li><Link href="/exports" className="hover:text-green-300 transition-colors">التصدير</Link></li>
-                <li><Link href="/analysis" className="hover:text-green-300 transition-colors">التحليل</Link></li>
-                <li><Link href="/experts" className="hover:text-green-300 transition-colors">الاستشارات</Link></li>
+                <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">التوصيل</Link></li>
+                <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">التصدير</Link></li>
+                <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">التحليل</Link></li>
+                <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">الاستشارات</Link></li>
               </ul>
             </div>
 
