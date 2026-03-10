@@ -110,7 +110,7 @@ export default function HomePage() {
 
             {/* Subtitle */}
             <p className="text-2xl text-white font-NeoSansArabicMedium">
-              أستكشف موقعنا الغلة
+              من الفلاح إلى الزبون
             </p>
           </div>
         </div>
