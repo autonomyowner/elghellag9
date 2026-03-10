@@ -322,7 +322,7 @@ export default function PublicProfilePage({ params }: PageProps) {
                   قم بتسجيل الدخول لإضافة تقييم
                 </p>
                 <Link
-                  href="/auth/sign-in"
+                  href="/auth/login"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-white text-sm font-medium transition-all duration-200"
                 >
                   تسجيل الدخول

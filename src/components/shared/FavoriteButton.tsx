@@ -20,7 +20,7 @@ export function FavoriteButton({ listingId, className = '' }: FavoriteButtonProp
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      window.location.href = '/auth/sign-in';
+      window.location.href = '/auth/login';
       return;
     }
 

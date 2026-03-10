@@ -18,7 +18,7 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      window.location.href = '/auth/sign-in';
+      window.location.href = '/auth/login';
     }
   }, [authLoading, isAuthenticated]);
 
