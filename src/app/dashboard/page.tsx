@@ -207,7 +207,7 @@ export default function DashboardPage() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+        style={{ background: "linear-gradient(135deg, #14532d 0%, #111827 100%)" }}
       >
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-green-400 animate-spin mx-auto mb-3" />
@@ -227,7 +227,7 @@ export default function DashboardPage() {
       <div
         className="min-h-screen flex items-center justify-center px-4"
         dir="rtl"
-        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+        style={{ background: "linear-gradient(135deg, #14532d 0%, #111827 100%)" }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -267,7 +267,7 @@ export default function DashboardPage() {
     <div
       className="min-h-screen pb-20 text-white"
       dir="rtl"
-      style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+      style={{ background: "linear-gradient(135deg, #14532d 0%, #111827 100%)" }}
     >
       {/* Background orbs */}
       <div

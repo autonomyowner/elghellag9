@@ -46,7 +46,7 @@ export default function NewListingPage() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+        style={{ background: "linear-gradient(135deg, #14532d 0%, #111827 100%)" }}
       >
         <Loader2 className="w-10 h-10 text-green-400 animate-spin" />
       </div>
@@ -58,7 +58,7 @@ export default function NewListingPage() {
       <div
         className="min-h-screen flex items-center justify-center px-4"
         dir="rtl"
-        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+        style={{ background: "linear-gradient(135deg, #14532d 0%, #111827 100%)" }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -91,7 +91,7 @@ export default function NewListingPage() {
       <div
         className="min-h-screen flex items-center justify-center px-4"
         dir="rtl"
-        style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+        style={{ background: "linear-gradient(135deg, #14532d 0%, #111827 100%)" }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -120,7 +120,7 @@ export default function NewListingPage() {
     <div
       className="min-h-screen pb-16"
       dir="rtl"
-      style={{ background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)" }}
+      style={{ background: "linear-gradient(135deg, #14532d 0%, #111827 100%)" }}
     >
       {/* Background orbs */}
       <div

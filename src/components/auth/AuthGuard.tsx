@@ -20,7 +20,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f1f08] via-[#1a3510] to-[#0d1a07]">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-900 to-gray-900">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

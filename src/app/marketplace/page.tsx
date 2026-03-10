@@ -108,7 +108,7 @@ export default function MarketplacePage() {
       className="min-h-screen text-white"
       dir="rtl"
       style={{
-        background: "linear-gradient(135deg, #0d1f07 0%, #1a2e0a 40%, #0f1a07 100%)",
+        background: "linear-gradient(135deg, #14532d 0%, #111827 100%)",
       }}
     >
       {/* Hero */}
@@ -234,9 +234,9 @@ export default function MarketplacePage() {
                     border: "1px solid rgba(255,255,255,0.14)",
                   }}
                 >
-                  <option value="" style={{ background: "#1a2e0a" }}>كل الولايات</option>
+                  <option value="" style={{ background: "#14532d" }}>كل الولايات</option>
                   {WILAYAS.map((w) => (
-                    <option key={w} value={w} style={{ background: "#1a2e0a" }}>
+                    <option key={w} value={w} style={{ background: "#14532d" }}>
                       {w}
                     </option>
                   ))}

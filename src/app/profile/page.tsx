@@ -94,7 +94,7 @@ export default function ProfilePage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-[#2d5016] via-[#1a3a0a] to-[#0d1f05] pt-20 pb-16 px-4"
+      className="min-h-screen bg-gradient-to-br from-green-900 to-gray-900 pt-20 pb-16 px-4"
       dir="rtl"
     >
       {/* Ambient glows */}

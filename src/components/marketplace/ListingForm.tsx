@@ -198,7 +198,7 @@ export default function ListingForm({
             className="transition-all duration-200"
           >
             {CATEGORIES.map((cat) => (
-              <option key={cat.value} value={cat.value} style={{ background: "#1a2e0a" }}>
+              <option key={cat.value} value={cat.value} style={{ background: "#14532d" }}>
                 {cat.emoji} {cat.label}
               </option>
             ))}
@@ -250,9 +250,9 @@ export default function ListingForm({
             onChange={(e) => set("unit", e.target.value)}
             style={inputStyle}
           >
-            <option value="" style={{ background: "#1a2e0a" }}>اختر الوحدة (اختياري)</option>
+            <option value="" style={{ background: "#14532d" }}>اختر الوحدة (اختياري)</option>
             {UNITS.map((u) => (
-              <option key={u.value} value={u.value} style={{ background: "#1a2e0a" }}>
+              <option key={u.value} value={u.value} style={{ background: "#14532d" }}>
                 {u.label}
               </option>
             ))}
@@ -266,9 +266,9 @@ export default function ListingForm({
             onChange={(e) => set("condition", e.target.value as ConditionValue | "")}
             style={inputStyle}
           >
-            <option value="" style={{ background: "#1a2e0a" }}>اختر الحالة (اختياري)</option>
+            <option value="" style={{ background: "#14532d" }}>اختر الحالة (اختياري)</option>
             {CONDITIONS.map((c) => (
-              <option key={c.value} value={c.value} style={{ background: "#1a2e0a" }}>
+              <option key={c.value} value={c.value} style={{ background: "#14532d" }}>
                 {c.label}
               </option>
             ))}
@@ -285,9 +285,9 @@ export default function ListingForm({
             onChange={(e) => set("wilaya", e.target.value)}
             style={inputStyle}
           >
-            <option value="" style={{ background: "#1a2e0a" }}>اختر الولاية (اختياري)</option>
+            <option value="" style={{ background: "#14532d" }}>اختر الولاية (اختياري)</option>
             {WILAYAS.map((w) => (
-              <option key={w} value={w} style={{ background: "#1a2e0a" }}>
+              <option key={w} value={w} style={{ background: "#14532d" }}>
                 {w}
               </option>
             ))}

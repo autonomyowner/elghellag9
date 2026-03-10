@@ -5,7 +5,7 @@ export default function SignupPage() {
     <div
       className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, #0f1f08 0%, #1a3510 40%, #0d2e06 70%, #0a1a05 100%)',
+        background: 'linear-gradient(135deg, #14532d 0%, #111827 100%)',
       }}
     >
       {/* Ambient glow orbs */}
