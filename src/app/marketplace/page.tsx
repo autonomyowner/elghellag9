@@ -289,7 +289,7 @@ export default function MarketplacePage() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
-          className="fixed bottom-8 left-6 z-50"
+          className="fixed bottom-8 left-6 z-50 hidden md:block"
         >
           <Link href="/marketplace/new">
             <motion.button
