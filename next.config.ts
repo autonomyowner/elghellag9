@@ -4,7 +4,6 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   // Performance optimizations
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
   
@@ -15,42 +14,6 @@ const nextConfig: NextConfig = {
   
   // Enable strict mode for better performance
   reactStrictMode: true,
-  
-  // Optimized webpack configuration
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Optimize bundle splitting for production
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            priority: 10,
-          },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            priority: 5,
-          },
-        },
-      };
-    }
-    
-    // Add compression for better performance
-    if (!dev) {
-      config.plugins.push(
-        new (require('compression-webpack-plugin'))({
-          test: /\.(js|css|html|svg)$/,
-          algorithm: 'gzip',
-        })
-      );
-    }
-    
-    return config;
-  },
   
   // Optimize for better performance
   trailingSlash: false,
