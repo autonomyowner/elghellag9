@@ -229,7 +229,7 @@ export default function HomePage() {
             </Link>
 
             {/* Bubble 6 - خدمات التحليل والدراسات */}
-            <Link href="/marketplace" className="group">
+            <Link href="/VAR" className="group">
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-indigo-500/30 to-indigo-600/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/25 border border-indigo-500/40 mx-auto mb-3">
                   <span className="text-4xl">🛰️</span>
