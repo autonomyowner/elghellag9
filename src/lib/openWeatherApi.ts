@@ -49,7 +49,7 @@ class OpenWeatherApiService {
   private baseUrl = 'https://api.openweathermap.org/data/2.5';
 
   constructor() {
-    this.apiKey = process.env.OPENWEATHERMAP_API_KEY || 'b87d49d14ecb60153d657c6eb4b57e45';
+    this.apiKey = process.env.NEXT_PUBLIC_OPENWEATHERMAP_API_KEY || '';
   }
 
   // Fetch current weather data
@@ -77,19 +77,8 @@ class OpenWeatherApiService {
         weatherIcon: data.weather[0].icon
       };
     } catch (error) {
-      console.error('❌ Error fetching OpenWeatherMap data:', error);
-      // Return fallback data
-      return {
-        temperature: 22 + Math.random() * 15,
-        humidity: 60 + Math.random() * 30,
-        rainfall: Math.random() * 50,
-        windSpeed: 5 + Math.random() * 15,
-        pressure: 1013 + Math.random() * 20,
-        visibility: 10000,
-        uvIndex: 5 + Math.random() * 5,
-        weatherDescription: 'مشمس جزئياً',
-        weatherIcon: '02d'
-      };
+      console.error('OpenWeatherMap current weather error:', error);
+      return null;
     }
   }
 
@@ -123,21 +112,8 @@ class OpenWeatherApiService {
         weatherIcon: item.weather[0].icon
       }));
     } catch (error) {
-      console.error('❌ Error fetching weather forecast:', error);
-      // Return fallback forecast data
-      return Array.from({ length: 5 }, (_, i) => ({
-        date: new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        temperature: {
-          min: 15 + Math.random() * 10,
-          max: 25 + Math.random() * 15,
-          average: 20 + Math.random() * 10
-        },
-        humidity: 60 + Math.random() * 30,
-        rainfall: Math.random() * 20,
-        windSpeed: 5 + Math.random() * 10,
-        weatherDescription: 'مشمس جزئياً',
-        weatherIcon: '02d'
-      }));
+      console.error('OpenWeatherMap forecast error:', error);
+      return null;
     }
   }
 
@@ -201,30 +177,27 @@ class OpenWeatherApiService {
   }
 
   // Fetch comprehensive weather data
-  async fetchWeatherData(lat: number, lon: number): Promise<OpenWeatherData> {
-    console.log('🌤️ Fetching OpenWeatherMap data for coordinates:', lat, lon);
-    
+  async fetchWeatherData(lat: number, lon: number): Promise<OpenWeatherData | null> {
     try {
+      if (!this.apiKey) {
+        console.warn('OpenWeatherMap API key not configured');
+        return null;
+      }
+
       const [currentWeather, forecast] = await Promise.all([
         this.fetchCurrentWeather(lat, lon),
         this.fetchWeatherForecast(lat, lon)
       ]);
 
+      if (!currentWeather || !forecast) return null;
+
       const alerts = this.generateAgriculturalAlerts(currentWeather, forecast);
       const agricultural = this.analyzeAgriculturalConditions(currentWeather, forecast);
 
-      const result = {
-        current: currentWeather,
-        forecast,
-        alerts,
-        agricultural
-      };
-
-      console.log('✅ OpenWeatherMap data fetched successfully:', result);
-      return result;
+      return { current: currentWeather, forecast, alerts, agricultural };
     } catch (error) {
-      console.error('❌ Error fetching OpenWeatherMap data:', error);
-      throw error;
+      console.error('OpenWeatherMap error:', error);
+      return null;
     }
   }
 }

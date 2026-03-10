@@ -63,7 +63,10 @@ interface RevenueProjection {
   roi: number;
 }
 
+const AVAILABLE_CROPS = ['قمح', 'شعير', 'بطاطس', 'طماطم', 'بصل', 'حمص', 'عدس', 'ذرة'];
+
 const CostCalculator: React.FC<CostCalculatorProps> = ({ cropType, landArea, region, onClose }) => {
+  const [activeCrop, setActiveCrop] = useState(cropType);
   const [costBreakdown, setCostBreakdown] = useState<CostBreakdown>({
     seeds: { quantity: 0, pricePerUnit: 0, totalCost: 0 },
     fertilizers: {
@@ -112,10 +115,10 @@ const CostCalculator: React.FC<CostCalculatorProps> = ({ cropType, landArea, reg
   // Default values based on crop type
   useEffect(() => {
     loadDefaultValues();
-  }, [cropType, landArea]);
+  }, [activeCrop, landArea]);
 
   const loadDefaultValues = () => {
-    const defaults = getDefaultValues(cropType, landArea);
+    const defaults = getDefaultValues(activeCrop, landArea);
     setCostBreakdown(defaults.costs);
     setRevenueProjection(defaults.revenue);
   };
@@ -185,27 +188,187 @@ const CostCalculator: React.FC<CostCalculatorProps> = ({ cropType, landArea, reg
             weeding: { hours: 10 * area, ratePerHour: 500, total: 10 * area * 500 },
             harvesting: { hours: 14 * area, ratePerHour: 500, total: 14 * area * 500 }
           },
-          irrigation: {
-            waterCost: 2500 * area,
-            electricity: 1200 * area,
-            equipment: 1800 * area,
-            maintenance: 800 * area
-          },
-          equipment: {
-            tractorRental: 7000 * area,
-            implements: 2500 * area,
-            fuel: 3500 * area,
-            maintenance: 1800 * area
-          }
+          irrigation: { waterCost: 2500 * area, electricity: 1200 * area, equipment: 1800 * area, maintenance: 800 * area },
+          equipment: { tractorRental: 7000 * area, implements: 2500 * area, fuel: 3500 * area, maintenance: 1800 * area }
         },
         revenue: {
           expectedYield: { quantity: 3.5 * area, unit: 'طن' },
           marketPrice: { currentPrice: 35000, expectedPrice: 38000, pricePerUnit: 'دج/طن' },
-          totalRevenue: 3.5 * area * 38000,
-          totalCosts: 0,
-          netProfit: 0,
-          profitMargin: 0,
-          roi: 0
+          totalRevenue: 3.5 * area * 38000, totalCosts: 0, netProfit: 0, profitMargin: 0, roi: 0
+        }
+      },
+      'بطاطس': {
+        costs: {
+          seeds: { quantity: 2500 * area, pricePerUnit: 60, totalCost: 2500 * area * 60 },
+          fertilizers: {
+            nitrogen: { kg: 150 * area, pricePerKg: 45, total: 150 * area * 45 },
+            phosphorus: { kg: 100 * area, pricePerKg: 55, total: 100 * area * 55 },
+            potassium: { kg: 120 * area, pricePerKg: 65, total: 120 * area * 65 },
+            organic: { kg: 5000 * area, pricePerKg: 5, total: 5000 * area * 5 }
+          },
+          pesticides: {
+            herbicides: { liters: 2 * area, pricePerLiter: 800, total: 2 * area * 800 },
+            insecticides: { liters: 3 * area, pricePerLiter: 1200, total: 3 * area * 1200 },
+            fungicides: { liters: 4 * area, pricePerLiter: 1500, total: 4 * area * 1500 }
+          },
+          labor: {
+            landPreparation: { hours: 12 * area, ratePerHour: 500, total: 12 * area * 500 },
+            planting: { hours: 16 * area, ratePerHour: 500, total: 16 * area * 500 },
+            weeding: { hours: 20 * area, ratePerHour: 500, total: 20 * area * 500 },
+            harvesting: { hours: 30 * area, ratePerHour: 500, total: 30 * area * 500 }
+          },
+          irrigation: { waterCost: 8000 * area, electricity: 3000 * area, equipment: 2500 * area, maintenance: 1500 * area },
+          equipment: { tractorRental: 12000 * area, implements: 5000 * area, fuel: 6000 * area, maintenance: 3000 * area }
+        },
+        revenue: {
+          expectedYield: { quantity: 25 * area, unit: 'طن' },
+          marketPrice: { currentPrice: 40000, expectedPrice: 42000, pricePerUnit: 'دج/طن' },
+          totalRevenue: 25 * area * 42000, totalCosts: 0, netProfit: 0, profitMargin: 0, roi: 0
+        }
+      },
+      'طماطم': {
+        costs: {
+          seeds: { quantity: 0.3 * area, pricePerUnit: 80000, totalCost: 0.3 * area * 80000 },
+          fertilizers: {
+            nitrogen: { kg: 200 * area, pricePerKg: 45, total: 200 * area * 45 },
+            phosphorus: { kg: 120 * area, pricePerKg: 55, total: 120 * area * 55 },
+            potassium: { kg: 180 * area, pricePerKg: 65, total: 180 * area * 65 },
+            organic: { kg: 8000 * area, pricePerKg: 5, total: 8000 * area * 5 }
+          },
+          pesticides: {
+            herbicides: { liters: 1 * area, pricePerLiter: 800, total: 1 * area * 800 },
+            insecticides: { liters: 5 * area, pricePerLiter: 1200, total: 5 * area * 1200 },
+            fungicides: { liters: 6 * area, pricePerLiter: 1500, total: 6 * area * 1500 }
+          },
+          labor: {
+            landPreparation: { hours: 10 * area, ratePerHour: 500, total: 10 * area * 500 },
+            planting: { hours: 20 * area, ratePerHour: 500, total: 20 * area * 500 },
+            weeding: { hours: 30 * area, ratePerHour: 500, total: 30 * area * 500 },
+            harvesting: { hours: 60 * area, ratePerHour: 500, total: 60 * area * 500 }
+          },
+          irrigation: { waterCost: 12000 * area, electricity: 4000 * area, equipment: 5000 * area, maintenance: 2000 * area },
+          equipment: { tractorRental: 10000 * area, implements: 8000 * area, fuel: 5000 * area, maintenance: 3000 * area }
+        },
+        revenue: {
+          expectedYield: { quantity: 40 * area, unit: 'طن' },
+          marketPrice: { currentPrice: 30000, expectedPrice: 35000, pricePerUnit: 'دج/طن' },
+          totalRevenue: 40 * area * 35000, totalCosts: 0, netProfit: 0, profitMargin: 0, roi: 0
+        }
+      },
+      'بصل': {
+        costs: {
+          seeds: { quantity: 5 * area, pricePerUnit: 15000, totalCost: 5 * area * 15000 },
+          fertilizers: {
+            nitrogen: { kg: 100 * area, pricePerKg: 45, total: 100 * area * 45 },
+            phosphorus: { kg: 80 * area, pricePerKg: 55, total: 80 * area * 55 },
+            potassium: { kg: 60 * area, pricePerKg: 65, total: 60 * area * 65 },
+            organic: { kg: 3000 * area, pricePerKg: 5, total: 3000 * area * 5 }
+          },
+          pesticides: {
+            herbicides: { liters: 2 * area, pricePerLiter: 800, total: 2 * area * 800 },
+            insecticides: { liters: 2 * area, pricePerLiter: 1200, total: 2 * area * 1200 },
+            fungicides: { liters: 3 * area, pricePerLiter: 1500, total: 3 * area * 1500 }
+          },
+          labor: {
+            landPreparation: { hours: 10 * area, ratePerHour: 500, total: 10 * area * 500 },
+            planting: { hours: 24 * area, ratePerHour: 500, total: 24 * area * 500 },
+            weeding: { hours: 20 * area, ratePerHour: 500, total: 20 * area * 500 },
+            harvesting: { hours: 24 * area, ratePerHour: 500, total: 24 * area * 500 }
+          },
+          irrigation: { waterCost: 6000 * area, electricity: 2500 * area, equipment: 2000 * area, maintenance: 1000 * area },
+          equipment: { tractorRental: 8000 * area, implements: 4000 * area, fuel: 4000 * area, maintenance: 2000 * area }
+        },
+        revenue: {
+          expectedYield: { quantity: 30 * area, unit: 'طن' },
+          marketPrice: { currentPrice: 25000, expectedPrice: 28000, pricePerUnit: 'دج/طن' },
+          totalRevenue: 30 * area * 28000, totalCosts: 0, netProfit: 0, profitMargin: 0, roi: 0
+        }
+      },
+      'حمص': {
+        costs: {
+          seeds: { quantity: 80 * area, pricePerUnit: 100, totalCost: 80 * area * 100 },
+          fertilizers: {
+            nitrogen: { kg: 20 * area, pricePerKg: 45, total: 20 * area * 45 },
+            phosphorus: { kg: 60 * area, pricePerKg: 55, total: 60 * area * 55 },
+            potassium: { kg: 30 * area, pricePerKg: 65, total: 30 * area * 65 },
+            organic: { kg: 0, pricePerKg: 0, total: 0 }
+          },
+          pesticides: {
+            herbicides: { liters: 1.5 * area, pricePerLiter: 800, total: 1.5 * area * 800 },
+            insecticides: { liters: 1 * area, pricePerLiter: 1200, total: 1 * area * 1200 },
+            fungicides: { liters: 1 * area, pricePerLiter: 1500, total: 1 * area * 1500 }
+          },
+          labor: {
+            landPreparation: { hours: 6 * area, ratePerHour: 500, total: 6 * area * 500 },
+            planting: { hours: 4 * area, ratePerHour: 500, total: 4 * area * 500 },
+            weeding: { hours: 8 * area, ratePerHour: 500, total: 8 * area * 500 },
+            harvesting: { hours: 12 * area, ratePerHour: 500, total: 12 * area * 500 }
+          },
+          irrigation: { waterCost: 2000 * area, electricity: 1000 * area, equipment: 1500 * area, maintenance: 500 * area },
+          equipment: { tractorRental: 6000 * area, implements: 2000 * area, fuel: 3000 * area, maintenance: 1500 * area }
+        },
+        revenue: {
+          expectedYield: { quantity: 1.5 * area, unit: 'طن' },
+          marketPrice: { currentPrice: 80000, expectedPrice: 85000, pricePerUnit: 'دج/طن' },
+          totalRevenue: 1.5 * area * 85000, totalCosts: 0, netProfit: 0, profitMargin: 0, roi: 0
+        }
+      },
+      'عدس': {
+        costs: {
+          seeds: { quantity: 60 * area, pricePerUnit: 120, totalCost: 60 * area * 120 },
+          fertilizers: {
+            nitrogen: { kg: 15 * area, pricePerKg: 45, total: 15 * area * 45 },
+            phosphorus: { kg: 50 * area, pricePerKg: 55, total: 50 * area * 55 },
+            potassium: { kg: 20 * area, pricePerKg: 65, total: 20 * area * 65 },
+            organic: { kg: 0, pricePerKg: 0, total: 0 }
+          },
+          pesticides: {
+            herbicides: { liters: 1 * area, pricePerLiter: 800, total: 1 * area * 800 },
+            insecticides: { liters: 0.5 * area, pricePerLiter: 1200, total: 0.5 * area * 1200 },
+            fungicides: { liters: 0.5 * area, pricePerLiter: 1500, total: 0.5 * area * 1500 }
+          },
+          labor: {
+            landPreparation: { hours: 6 * area, ratePerHour: 500, total: 6 * area * 500 },
+            planting: { hours: 3 * area, ratePerHour: 500, total: 3 * area * 500 },
+            weeding: { hours: 8 * area, ratePerHour: 500, total: 8 * area * 500 },
+            harvesting: { hours: 10 * area, ratePerHour: 500, total: 10 * area * 500 }
+          },
+          irrigation: { waterCost: 1500 * area, electricity: 800 * area, equipment: 1200 * area, maintenance: 500 * area },
+          equipment: { tractorRental: 5000 * area, implements: 2000 * area, fuel: 2500 * area, maintenance: 1200 * area }
+        },
+        revenue: {
+          expectedYield: { quantity: 1.2 * area, unit: 'طن' },
+          marketPrice: { currentPrice: 90000, expectedPrice: 95000, pricePerUnit: 'دج/طن' },
+          totalRevenue: 1.2 * area * 95000, totalCosts: 0, netProfit: 0, profitMargin: 0, roi: 0
+        }
+      },
+      'ذرة': {
+        costs: {
+          seeds: { quantity: 25 * area, pricePerUnit: 200, totalCost: 25 * area * 200 },
+          fertilizers: {
+            nitrogen: { kg: 200 * area, pricePerKg: 45, total: 200 * area * 45 },
+            phosphorus: { kg: 80 * area, pricePerKg: 55, total: 80 * area * 55 },
+            potassium: { kg: 60 * area, pricePerKg: 65, total: 60 * area * 65 },
+            organic: { kg: 3000 * area, pricePerKg: 5, total: 3000 * area * 5 }
+          },
+          pesticides: {
+            herbicides: { liters: 3 * area, pricePerLiter: 800, total: 3 * area * 800 },
+            insecticides: { liters: 2 * area, pricePerLiter: 1200, total: 2 * area * 1200 },
+            fungicides: { liters: 1 * area, pricePerLiter: 1500, total: 1 * area * 1500 }
+          },
+          labor: {
+            landPreparation: { hours: 8 * area, ratePerHour: 500, total: 8 * area * 500 },
+            planting: { hours: 6 * area, ratePerHour: 500, total: 6 * area * 500 },
+            weeding: { hours: 14 * area, ratePerHour: 500, total: 14 * area * 500 },
+            harvesting: { hours: 16 * area, ratePerHour: 500, total: 16 * area * 500 }
+          },
+          irrigation: { waterCost: 8000 * area, electricity: 3000 * area, equipment: 2500 * area, maintenance: 1500 * area },
+          equipment: { tractorRental: 10000 * area, implements: 4000 * area, fuel: 5000 * area, maintenance: 2500 * area }
+        },
+        revenue: {
+          expectedYield: { quantity: 8 * area, unit: 'طن' },
+          marketPrice: { currentPrice: 35000, expectedPrice: 38000, pricePerUnit: 'دج/طن' },
+          totalRevenue: 8 * area * 38000, totalCosts: 0, netProfit: 0, profitMargin: 0, roi: 0
         }
       }
     };
@@ -312,8 +475,19 @@ const CostCalculator: React.FC<CostCalculatorProps> = ({ cropType, landArea, reg
             <div className="flex items-center space-x-3 space-x-reverse">
               <Calculator className="w-8 h-8" />
               <div>
-                <h2 className="text-2xl font-bold">حاسبة تكاليف زراعة {cropType}</h2>
-                <p className="text-green-100">مساحة الأرض: {landArea} هكتار | المنطقة: {region}</p>
+                <h2 className="text-2xl font-bold">حاسبة تكاليف زراعة {activeCrop}</h2>
+                <div className="flex items-center gap-3 mt-1">
+                  <p className="text-green-100">مساحة الأرض: {landArea} هكتار | المنطقة: {region}</p>
+                  <select
+                    value={activeCrop}
+                    onChange={(e) => setActiveCrop(e.target.value)}
+                    className="bg-white/20 border border-white/30 rounded-xl px-3 py-1 text-white text-sm focus:ring-2 focus:ring-white/40 focus:border-transparent"
+                  >
+                    {AVAILABLE_CROPS.map(c => (
+                      <option key={c} value={c} className="bg-gray-900 text-white">{c}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
             <button
