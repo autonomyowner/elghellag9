@@ -489,22 +489,24 @@ export default function HomePage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-black/20 backdrop-blur-lg border-t border-white/10 py-12 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-black/20 backdrop-blur-lg border-t border-white/10 py-8 md:py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-3 space-x-reverse mb-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden border-2 border-white/20">
-                  <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
-                </div>
-                <h3 className="text-xl font-bold text-white">الغلة</h3>
-              </div>
-              <p className="text-white/70">منصة المزارعين الأولى في الجزائر</p>
+          {/* Logo + tagline - compact on mobile */}
+          <div className="flex items-center space-x-3 space-x-reverse mb-6">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden border-2 border-white/20">
+              <img src="/assets/logo o.jpg" alt="الغلة" className="w-full h-full object-cover" />
             </div>
-
             <div>
-              <h4 className="font-bold mb-4 text-green-300">السوق</h4>
-              <ul className="space-y-2 text-white/70">
+              <h3 className="text-lg md:text-xl font-bold text-white">الغلة</h3>
+              <p className="text-white/70 text-xs md:text-sm">منصة المزارعين الأولى في الجزائر</p>
+            </div>
+          </div>
+
+          {/* Links grid - 3 cols on mobile, 4 on desktop */}
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-4 md:gap-8">
+            <div>
+              <h4 className="font-bold mb-2 md:mb-4 text-green-300 text-sm md:text-base">السوق</h4>
+              <ul className="space-y-1 md:space-y-2 text-white/70 text-xs md:text-sm">
                 <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">الأراضي</Link></li>
                 <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">المنتجات</Link></li>
                 <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">المعدات</Link></li>
@@ -513,8 +515,8 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h4 className="font-bold mb-4 text-green-300">الخدمات</h4>
-              <ul className="space-y-2 text-white/70">
+              <h4 className="font-bold mb-2 md:mb-4 text-green-300 text-sm md:text-base">الخدمات</h4>
+              <ul className="space-y-1 md:space-y-2 text-white/70 text-xs md:text-sm">
                 <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">التوصيل</Link></li>
                 <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">التصدير</Link></li>
                 <li><Link href="/marketplace" className="hover:text-green-300 transition-colors">التحليل</Link></li>
@@ -523,34 +525,35 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h4 className="font-bold mb-4 text-green-300">تواصل معنا</h4>
-              <ul className="space-y-2 text-white/70 mb-4">
+              <h4 className="font-bold mb-2 md:mb-4 text-green-300 text-sm md:text-base">تواصل معنا</h4>
+              <ul className="space-y-1 md:space-y-2 text-white/70 text-xs md:text-sm">
                 <li><Link href="/about" className="hover:text-green-300 transition-colors">من نحن</Link></li>
                 <li><Link href="/contact" className="hover:text-green-300 transition-colors">اتصل بنا</Link></li>
                 <li><Link href="/help" className="hover:text-green-300 transition-colors">المساعدة</Link></li>
               </ul>
+            </div>
+          </div>
 
-              {/* Social Media Text */}
-              <div className="mb-3">
-                <p className="text-orange-400 text-xs font-medium mb-1">الغلة علا صفحات السوشيال ميديا</p>
+          {/* Newsletter + Social - full width row on mobile */}
+          <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Newsletter */}
+            <div className="flex-1 max-w-sm">
+              <h5 className="font-semibold mb-2 text-green-200 text-xs md:text-sm">اشترك في القائمة البريدية</h5>
+              <div className="flex">
+                <input
+                  type="email"
+                  placeholder="البريد الإلكتروني"
+                  className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-r-lg text-white placeholder-white/50 text-xs md:text-sm focus:outline-none focus:border-green-400"
+                />
+                <button className="px-3 md:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-l-lg text-xs md:text-sm transition-colors">
+                  اشتراك
+                </button>
               </div>
+            </div>
 
-              {/* Newsletter Subscription */}
-              <div className="mb-4">
-                <h5 className="font-semibold mb-2 text-green-200 text-sm">اشترك في القائمة البريدية</h5>
-                <div className="flex">
-                  <input
-                    type="email"
-                    placeholder="البريد الإلكتروني"
-                    className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-r-lg text-white placeholder-white/50 text-sm focus:outline-none focus:border-green-400"
-                  />
-                  <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-l-lg text-sm transition-colors">
-                    اشتراك
-                  </button>
-                </div>
-              </div>
-
-              {/* Social Media Boxes */}
+            {/* Social */}
+            <div className="flex items-center gap-3">
+              <p className="text-orange-400 text-xs font-medium hidden sm:block">تابعنا</p>
               <div className="flex space-x-2 space-x-reverse">
                 <a
                   href="https://www.facebook.com/profile.php?id=61578467404013"
@@ -586,7 +589,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="border-t border-white/10 mt-8 pt-8 text-center text-white/60">
+          <div className="border-t border-white/10 mt-6 pt-4 text-center text-white/60 text-xs md:text-sm">
             <p>&copy; 2024 منصة الغلة. جميع الحقوق محفوظة.</p>
           </div>
         </div>
